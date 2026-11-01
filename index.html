@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7fb">
+  <title>Ledgerly — Mini Accounting</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#" aria-label="Ledgerly home" data-page="dashboard">
+        <span class="brand-mark" aria-hidden="true">L</span>
+        <span class="brand-name">ledgerly<span>.</span></span>
+      </a>
+      <div class="workspace-label">WORKSPACE</div>
+      <nav class="main-nav" aria-label="Main navigation">
+        <button class="nav-link active" data-page="dashboard" aria-current="page"><span class="nav-icon">◫</span>Dashboard</button>
+        <button class="nav-link" data-page="members"><span class="nav-icon">♙</span>Membership Management</button>
+        <button class="nav-link" data-page="collections"><span class="nav-icon">₱</span>Fee Collection</button>
+        <button class="nav-link" data-page="expenses"><span class="nav-icon">↙</span>Expense Management</button>
+        <button class="nav-link" data-page="liquidation"><span class="nav-icon">↩</span>Cash Liquidation</button>
+        <button class="nav-link" data-page="reports"><span class="nav-icon">▥</span>Financial Reports</button>
+        <button class="nav-link" data-page="transactions"><span class="nav-icon">↔</span>Transaction History</button>
+        <button class="nav-link" data-page="users"><span class="nav-icon">♙</span>User Management</button>
+        <button class="nav-link" data-page="settings"><span class="nav-icon">⚙</span>Settings</button>
+        <button class="nav-link nav-logout" id="logoutButton"><span class="nav-icon">↪</span>Logout</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="help-card">
+          <div class="help-icon">✦</div>
+          <strong>Need a hand?</strong>
+          <p>Your demo data is saved in this browser.</p>
+          <button class="text-button" id="aboutButton">About this demo <span>→</span></button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <button class="mobile-menu" id="mobileMenu" aria-label="Open navigation">☰</button>
+        <div class="topbar-brand"><strong>Ledgerly</strong><span>Organization accounting</span></div>
+        <div class="breadcrumbs">Workspace <span>/</span> <strong id="breadcrumbPage">Dashboard</strong></div>
+        <div class="topbar-right">
+          <span class="demo-badge"><span></span> Demo mode</span>
+          <button class="icon-button" id="resetButton" title="Restore sample data" aria-label="Restore sample data">⟳</button>
+          <div class="topbar-profile"><span class="avatar">OA</span><span class="topbar-profile-copy"><strong>Organization Admin</strong><small>Administrator</small></span></div>
+        </div>
+      </header>
+
+      <section class="page active" id="page-dashboard">
+        <div class="page-heading">
+          <div><p class="eyebrow" id="todayLabel">YOUR ORGANIZATION AT A GLANCE</p><h1>Good morning, Admin <span class="wave">✦</span></h1><p class="page-subtitle">Membership, collections, and activity funds at a glance.</p></div>
+          <button class="button button-primary" data-action="new-member"><span>＋</span> Add member</button>
+        </div>
+        <div class="summary-grid">
+          <article class="summary-card">
+            <div class="card-topline"><span class="metric-label">Registered members</span><span class="metric-icon balance-icon">♙</span></div>
+            <div class="metric-value" id="membersCount">0</div>
+            <div class="metric-foot"><span class="neutral">Active member records</span><span class="period-label">All time</span></div>
+          </article>
+          <article class="summary-card">
+            <div class="card-topline"><span class="metric-label">Membership fees assessed</span><span class="metric-icon balance-icon">₱</span></div>
+            <div class="metric-value" id="assessedTotal">₱0.00</div>
+            <div class="metric-foot"><span class="neutral">Based on registered members</span><span class="period-label">All time</span></div>
+          </article>
+          <article class="summary-card">
+            <div class="card-topline"><span class="metric-label">Actual collections</span><span class="metric-icon income-icon">↗</span></div>
+            <div class="metric-value" id="actualCollections">₱0.00</div>
+            <div class="metric-foot"><span class="positive">Recorded member payments</span><span class="period-label">All time</span></div>
+          </article>
+          <article class="summary-card">
+            <div class="card-topline"><span class="metric-label">Outstanding fees</span><span class="metric-icon expense-icon">!</span></div>
+            <div class="metric-value" id="outstandingFees">₱0.00</div>
+            <div class="metric-foot"><span class="neutral">Assessed less collections</span><span class="period-label">All time</span></div>
+          </article>
+          <article class="summary-card">
+            <div class="card-topline"><span class="metric-label">Total expenses</span><span class="metric-icon expense-icon">↙</span></div>
+            <div class="metric-value" id="totalExpenses">₱0.00</div>
+            <div class="metric-foot"><span class="neutral">Expense records and transactions</span><span class="period-label">All time</span></div>
+          </article>
+          <article class="summary-card balance-card">
+            <div class="card-topline"><span class="metric-label">Available cash balance</span><span class="metric-icon balance-icon">₱</span></div>
+            <div class="metric-value" id="availableCash">₱0.00</div>
+            <div class="metric-foot"><span class="neutral">Income − expenses</span><span class="period-label">Advances not double-counted</span></div>
+          </article>
+        </div>
+        <div class="dashboard-grid">
+          <article class="panel activity-panel">
+            <div class="panel-heading"><div><h2>Monthly financial summary</h2><p>Income and expenses over the last 6 months</p></div><span class="chart-legend"><i class="legend-income"></i>Income <i class="legend-expense"></i>Expenses</span></div>
+            <div class="chart" id="cashFlowChart" aria-label="Six month income and expenses chart"></div>
+          </article>
+          <article class="panel breakdown-panel">
+            <div class="panel-heading"><div><h2>Expense breakdown</h2><p>By category this month</p></div><button class="more-button" data-page="expenses" aria-label="View expenses">•••</button></div>
+            <div id="expenseBreakdown" class="breakdown-list"></div>
+          </article>
+        </div>
+        <article class="panel recent-panel">
+          <div class="panel-heading"><div><h2>Recent transactions</h2><p>Your latest income and expenses</p></div><button class="button button-secondary button-small" data-page="transactions">View all <span>→</span></button></div>
+          <div class="table-wrap">
+            <table><thead><tr><th>TRANSACTION</th><th>CATEGORY</th><th>DATE</th><th>ACCOUNT</th><th class="amount-col">AMOUNT</th><th></th></tr></thead><tbody id="recentTransactions"></tbody></table>
+          </div>
+          <div class="empty-state hidden" id="recentEmpty"><span>↔</span><strong>No transactions yet</strong><p>Add your first transaction to get started.</p><button class="button button-secondary button-small" data-action="new-transaction">Add transaction</button></div>
+        </article>
+      </section>
+
+      <section class="page" id="page-members">
+        <div class="page-heading">
+          <div><p class="eyebrow">YOUR SCHOOL ORGANIZATION ROSTER</p><h1>Membership</h1><p class="page-subtitle">Maintain member records and keep track of each member’s dues status.</p></div>
+          <button class="button button-primary" data-action="new-member"><span>＋</span> Add member</button>
+        </div>
+        <div class="panel records-panel">
+          <div class="table-toolbar">
+            <div class="search-wrap"><span>⌕</span><input id="memberSearch" type="search" placeholder="Search name, ID, course..." aria-label="Search members"></div>
+            <div class="filter-group"><select id="memberStatusFilter" aria-label="Filter members by payment status"><option value="all">All payment statuses</option><option value="Paid">Paid</option><option value="Partial">Partial</option><option value="Unpaid">Unpaid</option></select><select id="courseFilter" aria-label="Filter members by course"><option value="all">All courses</option></select></div>
+          </div>
+          <div class="table-wrap"><table><thead><tr><th>MEMBER</th><th>COURSE / YEAR</th><th>CONTACT</th><th>FEE</th><th>PAID</th><th>BALANCE</th><th>STATUS</th><th></th></tr></thead><tbody id="membersTable"></tbody></table></div>
+          <div class="table-footer"><span id="memberCount">0 members</span></div>
+          <div class="empty-state hidden" id="membersEmpty"><span>♙</span><strong>No matching members</strong><p>Change your filters or add a new member.</p></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-collections">
+        <div class="page-heading">
+          <div><p class="eyebrow">MEMBERSHIP FEE COLLECTION</p><h1>Collections</h1><p class="page-subtitle">Record full or partial dues payments and issue printable receipts.</p></div>
+          <button class="button button-primary" data-action="new-collection"><span>＋</span> Record payment</button>
+        </div>
+        <div class="summary-grid compact-summary">
+          <article class="summary-card"><div class="card-topline"><span class="metric-label">Collected</span><span class="metric-icon income-icon">↗</span></div><div class="metric-value" id="collectionPageTotal">₱0.00</div><div class="metric-foot"><span class="period-label">All recorded payments</span></div></article>
+          <article class="summary-card"><div class="card-topline"><span class="metric-label">Paid members</span><span class="metric-icon income-icon">✓</span></div><div class="metric-value" id="paidMemberCount">0</div><div class="metric-foot"><span class="period-label">Fees fully settled</span></div></article>
+          <article class="summary-card"><div class="card-topline"><span class="metric-label">Still outstanding</span><span class="metric-icon expense-icon">!</span></div><div class="metric-value" id="unpaidMemberCount">0</div><div class="metric-foot"><span class="period-label">Partial or unpaid</span></div></article>
+        </div>
+        <article class="panel online-demo">
+          <div class="online-mark">↗</div><div class="online-copy"><strong>Online payment preview</strong><span>Demonstration only — no payment gateway or real charge is connected.</span></div>
+          <button class="button button-secondary button-small" id="onlinePaymentButton">Preview payment flow</button>
+        </article>
+        <article class="panel records-panel">
+          <div class="panel-heading"><div><h2>Payment history</h2><p>Receipt references are generated automatically for every collection.</p></div><button class="button button-secondary button-small" id="collectionExportButton">↓ Export CSV</button></div>
+          <div class="table-toolbar">
+            <div class="search-wrap"><span>⌕</span><input id="collectionSearch" type="search" placeholder="Search member or receipt..." aria-label="Search payments"></div>
+            <div class="filter-group"><select id="collectionStatusFilter" aria-label="Filter collections by member status"><option value="all">All members</option><option value="Paid">Paid</option><option value="Partial">Partial</option><option value="Unpaid">Unpaid</option></select><input id="collectionDateFilter" type="month" aria-label="Filter collections by month"></div>
+          </div>
+          <div class="table-wrap"><table><thead><tr><th>RECEIPT / REF.</th><th>MEMBER</th><th>PAYMENT DATE</th><th>METHOD</th><th class="amount-col">AMOUNT</th><th></th></tr></thead><tbody id="collectionsTable"></tbody></table></div>
+          <div class="table-footer"><span id="collectionCount">0 payments</span></div>
+          <div class="empty-state hidden" id="collectionsEmpty"><span>₱</span><strong>No matching payments</strong><p>Record a payment or adjust your filters.</p></div>
+        </article>
+      </section>
+
+      <section class="page" id="page-expenses">
+        <div class="page-heading">
+          <div><p class="eyebrow">ORGANIZATION SPENDING</p><h1>Expense Management</h1><p class="page-subtitle">Record actual expenses with responsible persons and supporting references.</p></div>
+          <button class="button button-primary" data-action="new-expense"><span>＋</span> Record expense</button>
+        </div>
+        <div class="summary-grid compact-summary">
+          <article class="summary-card"><div class="card-topline"><span class="metric-label">Actual expenses</span><span class="metric-icon expense-icon">↙</span></div><div class="metric-value" id="expensePageTotal">₱0.00</div><div class="metric-foot"><span class="period-label">All recorded expenses</span></div></article>
+          <article class="summary-card"><div class="card-topline"><span class="metric-label">Expense records</span><span class="metric-icon balance-icon">▤</span></div><div class="metric-value" id="expenseRecordCount">0</div><div class="metric-foot"><span class="period-label">Actual expenses on file</span></div></article>
+        </div>
+        <article class="panel records-panel expense-history-panel">
+          <div class="panel-heading"><div><h2>Expense history</h2><p>Recorded expenses and supporting document references.</p></div><button class="button button-secondary button-small" id="expenseExportButton">↓ Export CSV</button></div>
+          <div class="table-toolbar">
+            <div class="search-wrap"><span>⌕</span><input id="expenseSearch" type="search" placeholder="Search description, person, reference..." aria-label="Search expenses"></div>
+            <div class="filter-group"><select id="expenseCategoryFilter" aria-label="Filter expense category"><option value="all">All categories</option></select><input id="expenseMonthFilter" type="month" aria-label="Filter expenses by month"></div>
+          </div>
+          <div class="table-wrap"><table><thead><tr><th>EXPENSE</th><th>CATEGORY</th><th>DATE</th><th>RESPONSIBLE</th><th>SUPPORTING REF.</th><th>ADVANCE</th><th class="amount-col">AMOUNT</th><th></th></tr></thead><tbody id="expensesTable"></tbody></table></div>
+          <div class="table-footer"><span id="expenseCount">0 expenses</span></div>
+          <div class="empty-state hidden" id="expensesEmpty"><span>↙</span><strong>No matching expenses</strong><p>Record an expense or adjust your filters.</p></div>
+        </article>
+      </section>
+
+      <section class="page" id="page-liquidation">
+        <div class="page-heading">
+          <div><p class="eyebrow">CASH ADVANCES &amp; SETTLEMENT</p><h1>Cash Liquidation</h1><p class="page-subtitle">Reconcile activity expenses with advances and record unspent cash returns.</p></div>
+          <button class="button button-primary" data-action="new-advance"><span>＋</span> Record cash advance</button>
+        </div>
+        <div class="summary-grid compact-summary">
+          <article class="summary-card"><div class="card-topline"><span class="metric-label">Cash advanced</span><span class="metric-icon balance-icon">₱</span></div><div class="metric-value" id="advancePageTotal">₱0.00</div><div class="metric-foot"><span class="period-label">Funds issued for activities</span></div></article>
+          <article class="summary-card"><div class="card-topline"><span class="metric-label">Actual expenses</span><span class="metric-icon expense-icon">↙</span></div><div class="metric-value" id="liquidationExpenseTotal">₱0.00</div><div class="metric-foot"><span class="period-label">Linked receipts and expenses</span></div></article>
+          <article class="summary-card"><div class="card-topline"><span class="metric-label">Unsettled balances</span><span class="metric-icon expense-icon">!</span></div><div class="metric-value" id="unliquidatedTotal">₱0.00</div><div class="metric-foot"><span class="period-label">Return due or reimbursement</span></div></article>
+        </div>
+        <article class="panel records-panel liquidation-panel">
+          <div class="panel-heading"><div><h2>Cash advances &amp; liquidation history</h2><p>Only actual expenses affect available cash. Record returned cash here without counting it again in the cash balance.</p></div></div>
+          <div class="table-wrap"><table><thead><tr><th>ACTIVITY / REF.</th><th>RESPONSIBLE</th><th>ADVANCE DATE</th><th class="amount-col">ADVANCE</th><th class="amount-col">ACTUAL EXPENSES</th><th class="amount-col">CASH RETURNED</th><th class="amount-col">RETURN DUE / (REIMBURSE)</th><th>STATUS</th><th></th></tr></thead><tbody id="advancesTable"></tbody></table></div>
+          <div class="empty-state hidden" id="advancesEmpty"><span>₱</span><strong>No cash advances recorded</strong><p>Add an advance for an organization activity to start liquidation.</p></div>
+        </article>
+      </section>
+
+      <section class="page" id="page-users">
+        <div class="page-heading">
+          <div><p class="eyebrow">DEMO WORKSPACE ACCESS</p><h1>User Management</h1><p class="page-subtitle">Manage the sample users shown in this browser demo. This does not create login accounts.</p></div>
+          <button class="button button-primary" data-action="new-user"><span>＋</span> Add demo user</button>
+        </div>
+        <div class="notice-card"><strong>Frontend demo only</strong><span>User records are for interface demonstration. There is no authentication or server-side access control.</span></div>
+        <article class="panel records-panel">
+          <div class="panel-heading"><div><h2>Workspace users</h2><p>Administrator and finance roles for the demo workspace.</p></div></div>
+          <div class="table-wrap"><table><thead><tr><th>USER</th><th>EMAIL</th><th>ROLE</th><th>STATUS</th><th></th></tr></thead><tbody id="usersTable"></tbody></table></div>
+          <div class="empty-state hidden" id="usersEmpty"><strong>No demo users</strong><p>Add a user to demonstrate workspace role management.</p></div>
+        </article>
+      </section>
+
+      <section class="page" id="page-settings">
+        <div class="page-heading">
+          <div><p class="eyebrow">WORKSPACE PREFERENCES</p><h1>Settings</h1><p class="page-subtitle">Update organization details and defaults used by new demo records.</p></div>
+        </div>
+        <article class="panel settings-card">
+          <div class="panel-heading"><div><h2>Organization settings</h2><p>These preferences are saved in LocalStorage in this browser.</p></div></div>
+          <form id="settingsForm">
+            <div class="form-grid">
+              <label class="field full-field">Organization name<input id="organizationNameInput" name="organizationName" maxlength="80" required></label>
+              <label class="field">Default membership fee (₱)<input id="defaultFeeInput" name="defaultFee" type="number" min="0" step="0.01" required></label>
+              <label class="field">Collection receipt prefix<input id="receiptPrefixInput" name="receiptPrefix" maxlength="8" pattern="[A-Za-z0-9]+" required></label>
+            </div>
+            <div class="settings-actions"><button type="button" class="button button-secondary" data-page="accounts">Open chart of accounts</button><button type="submit" class="button button-primary">Save settings</button></div>
+            <div class="form-error hidden" id="settingsError" role="alert"></div>
+          </form>
+        </article>
+        <article class="panel settings-note"><strong>Data &amp; privacy</strong><p>This is a browser-only prototype. Records stay in this browser’s LocalStorage and are not synchronized or protected by user accounts.</p></article>
+      </section>
+
+      <section class="page" id="page-transactions">
+        <div class="page-heading">
+          <div><p class="eyebrow">KEEP EVERY ENTRY IN ONE PLACE</p><h1>Transaction History &amp; Audit Trail</h1><p class="page-subtitle">Review registrations, payments, expenses, cash liquidation, and record changes.</p></div>
+          <button class="button button-primary" data-action="new-transaction"><span>＋</span> Add transaction</button>
+        </div>
+        <div class="panel transactions-panel">
+          <div class="table-toolbar">
+            <div class="search-wrap"><span>⌕</span><input id="transactionSearch" type="search" placeholder="Search references or activity..." aria-label="Search transaction history"></div>
+            <div class="filter-group">
+              <select id="typeFilter" aria-label="Filter by activity type"><option value="all">All activities</option><option value="Membership registration">Member registrations</option><option value="Membership fee payment">Fee payments</option><option value="Expense transaction">Expense transactions</option><option value="Cash advance">Cash advances</option><option value="Cash return">Cash returns</option><option value="Record updated">Record updates</option><option value="Record deleted">Record deletions</option><option value="Income transaction">Income transactions</option></select>
+              <select id="monthFilter" aria-label="Filter by month"><option value="all">All dates</option></select>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table><thead><tr><th>REFERENCE</th><th>ACTIVITY</th><th>DESCRIPTION</th><th>DATE</th><th class="amount-col">AMOUNT</th></tr></thead><tbody id="transactionsTable"></tbody></table>
+          </div>
+          <div class="table-footer"><span id="transactionCount">0 activities</span><button class="text-button" id="exportButton">↓ Export CSV</button></div>
+          <div class="empty-state hidden" id="transactionsEmpty"><span>⌕</span><strong>No matching activities</strong><p>Try changing your search or filters.</p></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-accounts">
+        <div class="page-heading">
+          <div><p class="eyebrow">ORGANIZE YOUR BOOKS</p><h1>Chart of accounts</h1><p class="page-subtitle">A clear list of the accounts you use to track activity.</p></div>
+          <button class="button button-primary" data-action="new-account"><span>＋</span> Add account</button>
+        </div>
+        <div class="account-summary" id="accountSummary"></div>
+        <article class="panel accounts-panel">
+          <div class="panel-heading"><div><h2>All accounts</h2><p>Manage your organization’s account categories.</p></div></div>
+          <div class="table-wrap">
+            <table><thead><tr><th>ACCOUNT</th><th>ACCOUNT TYPE</th><th>DESCRIPTION</th><th>TRANSACTIONS</th><th></th></tr></thead><tbody id="accountsTable"></tbody></table>
+          </div>
+          <div class="empty-state hidden" id="accountsEmpty"><span>▤</span><strong>No accounts yet</strong><p>Add an account to start organizing your books.</p></div>
+        </article>
+      </section>
+
+      <section class="page" id="page-reports">
+        <div class="page-heading">
+          <div><p class="eyebrow">A CLEARER VIEW OF YOUR BOOKS</p><h1>Financial Reports</h1><p class="page-subtitle">Filter, print, and export organization income and expenses.</p></div>
+          <div class="heading-actions"><button class="button button-secondary" id="reportPrintButton">▧ Print report</button><button class="button button-primary" id="reportExportButton">↓ Export CSV</button></div>
+        </div>
+        <div class="report-filter panel"><label for="reportType">Report</label><select id="reportType"><option value="summary">Financial summary</option><option value="collections">Collections</option><option value="expenses">Expenses</option><option value="monthly">Monthly summary</option></select><label for="reportStart">From</label><input id="reportStart" type="date"><label for="reportEnd">To</label><input id="reportEnd" type="date"><button class="button button-secondary button-small" id="clearReportDates">Clear dates</button><span id="reportDateRange"></span></div>
+        <div class="summary-grid report-summary">
+          <article class="summary-card"><div class="card-topline"><span class="metric-label">Membership fees assessed</span><span class="metric-icon balance-icon">₱</span></div><div class="metric-value" id="reportAssessed">₱0.00</div><div class="metric-foot"><span class="period-label">Current member roster</span></div></article>
+          <article class="summary-card"><div class="card-topline"><span class="metric-label">Total income</span><span class="metric-icon income-icon">↗</span></div><div class="metric-value" id="reportIncome">₱0.00</div><div class="metric-foot"><span class="period-label">Within selected dates</span></div></article>
+          <article class="summary-card"><div class="card-topline"><span class="metric-label">Outstanding fees</span><span class="metric-icon expense-icon">!</span></div><div class="metric-value" id="reportOutstanding">₱0.00</div><div class="metric-foot"><span class="period-label">Assessed less collections</span></div></article>
+          <article class="summary-card"><div class="card-topline"><span class="metric-label">Total expenses</span><span class="metric-icon expense-icon">↙</span></div><div class="metric-value" id="reportExpenses">₱0.00</div><div class="metric-foot"><span class="period-label">Within selected dates</span></div></article>
+          <article class="summary-card balance-card"><div class="card-topline"><span class="metric-label">Net cash activity</span><span class="metric-icon balance-icon">₱</span></div><div class="metric-value" id="reportNet">₱0.00</div><div class="metric-foot"><span class="period-label">Income − expenses; cash returns not double-counted</span></div></article>
+        </div>
+        <div class="dashboard-grid reports-grid">
+          <article class="panel"><div class="panel-heading"><div><h2>Monthly financial summary</h2><p>Income and expenses</p></div></div><div class="chart report-chart" id="reportChart"></div></article>
+          <article class="panel"><div class="panel-heading"><div><h2>Expense breakdown</h2><p>Spending by category for the selected dates</p></div></div><div class="breakdown-list" id="reportBreakdown"></div></article>
+        </div>
+        <article class="panel records-panel report-detail-panel"><div class="panel-heading"><div><h2 id="reportTableTitle">Report details</h2><p id="reportTableSubtitle">Records included in the selected report.</p></div></div><div class="table-wrap"><table id="reportTable"><thead></thead><tbody></tbody></table></div><div class="empty-state hidden" id="reportEmpty"><strong>No records in this period</strong><p>Try a different report type or date range.</p></div></article>
+      </section>
+
+      <footer class="app-footer">Made for your organization <span>•</span> All amounts in Philippine pesos (₱)</footer>
+    </main>
+  </div>
+
+  <div class="modal-backdrop hidden" id="memberModal" role="presentation">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="memberModalTitle">
+      <div class="modal-heading"><div><p class="eyebrow">MEMBERSHIP RECORD</p><h2 id="memberModalTitle">Add member</h2><p>Member IDs are generated automatically.</p></div><button class="close-button" data-close-modal aria-label="Close dialog">×</button></div>
+      <form id="memberForm"><input type="hidden" id="memberId">
+        <div class="form-grid">
+          <label class="field full-field">Full name<input id="memberNameInput" name="name" required maxlength="80" placeholder="e.g. Alex Santos"></label>
+          <label class="field">Course / program<input id="memberCourseInput" name="course" required maxlength="60" placeholder="e.g. BSIT"></label>
+          <label class="field">Year level<select id="memberYearInput" name="year" required><option value="1st Year">1st Year</option><option value="2nd Year">2nd Year</option><option value="3rd Year">3rd Year</option><option value="4th Year">4th Year</option><option value="5th Year">5th Year</option><option value="Graduate">Graduate</option></select></label>
+          <label class="field">Email address<input id="memberEmailInput" name="email" type="email" maxlength="100" placeholder="name@example.edu"></label>
+          <label class="field">Contact number<input id="memberPhoneInput" name="phone" type="tel" maxlength="24" placeholder="+63 9XX XXX XXXX"></label>
+          <label class="field full-field">Membership fee (₱)<input id="memberFeeInput" name="fee" type="number" min="0" step="0.01" required value="500"></label>
+        </div>
+        <div class="form-error hidden" id="memberError" role="alert"></div>
+        <div class="modal-actions"><button type="button" class="button button-secondary" data-close-modal>Cancel</button><button type="submit" class="button button-primary" id="saveMemberButton">Save member</button></div>
+      </form>
+    </section>
+  </div>
+
+  <div class="modal-backdrop hidden" id="collectionModal" role="presentation">
+    <section class="modal modal-compact" role="dialog" aria-modal="true" aria-labelledby="collectionModalTitle">
+      <div class="modal-heading"><div><p class="eyebrow">MEMBERSHIP FEE COLLECTION</p><h2 id="collectionModalTitle">Record payment</h2><p>A unique receipt number will be issued on save.</p></div><button class="close-button" data-close-modal aria-label="Close dialog">×</button></div>
+      <form id="collectionForm"><div class="form-grid">
+        <label class="field full-field">Member<select id="collectionMemberInput" name="memberId" required></select></label>
+        <div class="fee-preview full-field" id="memberFeePreview">Select a member to view their current balance.</div>
+        <label class="field">Payment amount (₱)<input id="collectionAmountInput" name="amount" type="number" min="0.01" step="0.01" required placeholder="0.00"></label>
+        <label class="field">Payment date<input id="collectionDateInput" name="date" type="date" required></label>
+        <label class="field full-field">Payment method<select id="collectionMethodInput" name="method" required><option>Cash</option><option>Bank transfer</option><option>GCash</option><option>PayMaya</option><option>Online demo</option><option>Other</option></select></label>
+        <label class="field full-field">Notes <span class="optional">(optional)</span><input id="collectionNotesInput" name="notes" maxlength="120" placeholder="Payment note"></label>
+      </div>
+      <div class="form-error hidden" id="collectionError" role="alert"></div>
+      <div class="modal-actions"><button type="button" class="button button-secondary" data-close-modal>Cancel</button><button type="submit" class="button button-primary">Record payment</button></div>
+      </form>
+    </section>
+  </div>
+
+  <div class="modal-backdrop hidden" id="expenseModal" role="presentation">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="expenseModalTitle">
+      <div class="modal-heading"><div><p class="eyebrow">EXPENSE RECORD</p><h2 id="expenseModalTitle">Record expense</h2><p>Include a responsible person and supporting reference.</p></div><button class="close-button" data-close-modal aria-label="Close dialog">×</button></div>
+      <form id="expenseForm"><input type="hidden" id="expenseId"><div class="form-grid">
+        <label class="field full-field">Description<input id="expenseDescriptionInput" name="description" required maxlength="100" placeholder="e.g. Student leadership seminar supplies"></label>
+        <label class="field">Expense category<select id="expenseCategoryInput" name="category" required><option>Activities &amp; events</option><option>Supplies</option><option>Food &amp; refreshments</option><option>Transportation</option><option>Venue</option><option>Communications</option><option>Other</option></select></label>
+        <label class="field">Amount (₱)<input id="expenseAmountInput" name="amount" type="number" min="0.01" step="0.01" required placeholder="0.00"></label>
+        <label class="field">Expense date<input id="expenseDateInput" name="date" type="date" required></label>
+        <label class="field">Responsible person<input id="expenseResponsibleInput" name="responsible" required maxlength="80" placeholder="Name of fund custodian"></label>
+        <label class="field">Receipt / document ref.<input id="expenseReferenceInput" name="reference" maxlength="60" placeholder="OR-2026-001"></label>
+        <label class="field">Linked cash advance<select id="expenseAdvanceInput" name="advanceId"><option value="">Not linked to an advance</option></select></label>
+        <label class="field full-field">Notes <span class="optional">(optional)</span><input id="expenseNotesInput" name="notes" maxlength="160" placeholder="Supporting details"></label>
+      </div>
+      <div class="form-error hidden" id="expenseError" role="alert"></div>
+      <div class="modal-actions"><button type="button" class="button button-secondary" data-close-modal>Cancel</button><button type="submit" class="button button-primary" id="saveExpenseButton">Save expense</button></div>
+      </form>
+    </section>
+  </div>
+
+  <div class="modal-backdrop hidden" id="advanceModal" role="presentation">
+    <section class="modal modal-compact" role="dialog" aria-modal="true" aria-labelledby="advanceModalTitle">
+      <div class="modal-heading"><div><p class="eyebrow">CASH ADVANCE</p><h2 id="advanceModalTitle">Record cash advance</h2><p>Track funds released for a school organization activity.</p></div><button class="close-button" data-close-modal aria-label="Close dialog">×</button></div>
+      <form id="advanceForm"><div class="form-grid">
+        <label class="field full-field">Activity / purpose<input id="advanceActivityInput" name="activity" required maxlength="100" placeholder="e.g. Leadership seminar"></label>
+        <label class="field">Amount advanced (₱)<input id="advanceAmountInput" name="amount" type="number" min="0.01" step="0.01" required placeholder="0.00"></label>
+        <label class="field">Date released<input id="advanceDateInput" name="date" type="date" required></label>
+        <label class="field full-field">Responsible person<input id="advanceResponsibleInput" name="responsible" required maxlength="80" placeholder="Name of fund custodian"></label>
+      </div>
+      <div class="form-error hidden" id="advanceError" role="alert"></div>
+      <div class="modal-actions"><button type="button" class="button button-secondary" data-close-modal>Cancel</button><button type="submit" class="button button-primary">Record advance</button></div>
+      </form>
+    </section>
+  </div>
+
+  <div class="modal-backdrop hidden" id="cashReturnModal" role="presentation">
+    <section class="modal modal-compact" role="dialog" aria-modal="true" aria-labelledby="cashReturnModalTitle">
+      <div class="modal-heading"><div><p class="eyebrow">CASH LIQUIDATION</p><h2 id="cashReturnModalTitle">Record returned cash</h2><p id="cashReturnSubtitle">Log unused activity funds returned to the organization.</p></div><button class="close-button" data-close-modal aria-label="Close dialog">×</button></div>
+      <form id="cashReturnForm"><input type="hidden" id="cashReturnAdvanceId"><div class="form-grid">
+        <label class="field">Amount returned (₱)<input id="cashReturnAmountInput" name="amount" type="number" min="0.01" step="0.01" required></label>
+        <label class="field">Return date<input id="cashReturnDateInput" name="date" type="date" required></label>
+        <label class="field full-field">Cash return reference <span class="optional">(optional)</span><input id="cashReturnReferenceInput" name="reference" maxlength="60" placeholder="CR-2026-001"></label>
+      </div>
+      <div class="form-error hidden" id="cashReturnError" role="alert"></div>
+      <div class="modal-actions"><button type="button" class="button button-secondary" data-close-modal>Cancel</button><button type="submit" class="button button-primary">Save cash return</button></div>
+      </form>
+    </section>
+  </div>
+
+  <div class="modal-backdrop hidden" id="cashReturnHistoryModal" role="presentation">
+    <section class="modal modal-compact" role="dialog" aria-modal="true" aria-labelledby="cashReturnHistoryTitle">
+      <div class="modal-heading"><div><p class="eyebrow">LIQUIDATION HISTORY</p><h2 id="cashReturnHistoryTitle">Cash returns</h2><p id="cashReturnHistorySubtitle"></p></div><button class="close-button" data-close-modal aria-label="Close dialog">×</button></div>
+      <div class="table-wrap"><table><thead><tr><th>RETURN REF.</th><th>RETURN DATE</th><th class="amount-col">AMOUNT</th></tr></thead><tbody id="cashReturnHistoryTable"></tbody></table></div>
+      <div class="empty-state hidden" id="cashReturnHistoryEmpty"><strong>No returned cash recorded</strong><p>Unspent advance balance has not yet been returned.</p></div>
+      <div class="modal-actions"><button type="button" class="button button-secondary" data-close-modal>Close</button></div>
+    </section>
+  </div>
+
+  <div class="modal-backdrop hidden" id="historyModal" role="presentation">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="historyModalTitle">
+      <div class="modal-heading"><div><p class="eyebrow">MEMBER ACCOUNT</p><h2 id="historyModalTitle">Payment history</h2><p id="historyModalSubtitle"></p></div><button class="close-button" data-close-modal aria-label="Close dialog">×</button></div>
+      <div class="table-wrap"><table><thead><tr><th>RECEIPT / REF.</th><th>DATE</th><th>METHOD</th><th class="amount-col">AMOUNT</th><th></th></tr></thead><tbody id="memberHistoryTable"></tbody></table></div>
+      <div class="empty-state hidden" id="historyEmpty"><strong>No payments recorded</strong><p>This member has no payment history yet.</p></div>
+      <div class="modal-actions"><button type="button" class="button button-secondary" data-close-modal>Close</button><button type="button" class="button button-primary" id="historyAddPayment">＋ Record payment</button></div>
+    </section>
+  </div>
+
+  <div class="modal-backdrop hidden" id="transactionModal" role="presentation">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="transactionModalTitle">
+      <div class="modal-heading"><div><p class="eyebrow">BOOKKEEPING</p><h2 id="transactionModalTitle">Add transaction</h2><p>Fill in the details of this entry.</p></div><button class="close-button" data-close-modal aria-label="Close dialog">×</button></div>
+      <form id="transactionForm">
+        <input type="hidden" id="transactionId">
+        <div class="form-row"><fieldset class="type-toggle"><legend>Transaction type</legend><label><input type="radio" name="type" value="income" checked><span>↗ Income</span></label><label><input type="radio" name="type" value="expense"><span>↙ Expense</span></label></fieldset></div>
+        <div class="form-grid">
+          <label class="field full-field">Description<input id="descriptionInput" name="description" required maxlength="80" placeholder="e.g. Monthly membership dues"></label>
+          <label class="field">Category<select id="categoryInput" name="category" required></select></label>
+          <label class="field">Account<select id="accountInput" name="account" required></select></label>
+          <label class="field">Amount (₱)<input id="amountInput" name="amount" type="number" min="0.01" step="0.01" required placeholder="0.00"></label>
+          <label class="field">Date<input id="dateInput" name="date" type="date" required></label>
+          <label class="field full-field">Notes <span class="optional">(optional)</span><textarea id="notesInput" name="notes" rows="2" maxlength="240" placeholder="Add a note for your records..."></textarea></label>
+        </div>
+        <div class="form-error hidden" id="transactionError" role="alert"></div>
+        <div class="modal-actions"><button type="button" class="button button-secondary" data-close-modal>Cancel</button><button type="submit" class="button button-primary" id="saveTransactionButton">Save transaction</button></div>
+      </form>
+    </section>
+  </div>
+
+  <div class="modal-backdrop hidden" id="accountModal" role="presentation">
+    <section class="modal modal-compact" role="dialog" aria-modal="true" aria-labelledby="accountModalTitle">
+      <div class="modal-heading"><div><p class="eyebrow">CHART OF ACCOUNTS</p><h2 id="accountModalTitle">Add account</h2><p>Create a category for your financial records.</p></div><button class="close-button" data-close-modal aria-label="Close dialog">×</button></div>
+      <form id="accountForm">
+        <input type="hidden" id="accountId">
+        <div class="form-grid">
+          <label class="field">Account name<input id="accountNameInput" name="name" required maxlength="50" placeholder="e.g. Fundraising"></label>
+          <label class="field">Account type<select id="accountTypeInput" name="type" required><option value="Income">Income</option><option value="Expense">Expense</option><option value="Asset">Asset</option><option value="Liability">Liability</option><option value="Equity">Equity</option></select></label>
+          <label class="field full-field">Description <span class="optional">(optional)</span><input id="accountDescriptionInput" name="description" maxlength="120" placeholder="What is this account used for?"></label>
+        </div>
+        <div class="form-error hidden" id="accountError" role="alert"></div>
+        <div class="modal-actions"><button type="button" class="button button-secondary" data-close-modal>Cancel</button><button type="submit" class="button button-primary" id="saveAccountButton">Save account</button></div>
+      </form>
+    </section>
+  </div>
+
+  <div class="modal-backdrop hidden" id="userModal" role="presentation">
+    <section class="modal modal-compact" role="dialog" aria-modal="true" aria-labelledby="userModalTitle">
+      <div class="modal-heading"><div><p class="eyebrow">DEMO WORKSPACE ACCESS</p><h2 id="userModalTitle">Add demo user</h2><p>User details are for demonstration only; no login account is created.</p></div><button class="close-button" data-close-modal aria-label="Close dialog">×</button></div>
+      <form id="userForm"><input type="hidden" id="userId">
+        <div class="form-grid">
+          <label class="field full-field">Full name<input id="userNameInput" name="name" required maxlength="80" placeholder="e.g. Finance Officer"></label>
+          <label class="field full-field">Email address<input id="userEmailInput" name="email" type="email" required maxlength="100" placeholder="name@example.edu"></label>
+          <label class="field full-field">Role<select id="userRoleInput" name="role" required><option>Administrator</option><option>Finance officer</option><option>Viewer</option></select></label>
+        </div>
+        <div class="form-error hidden" id="userError" role="alert"></div>
+        <div class="modal-actions"><button type="button" class="button button-secondary" data-close-modal>Cancel</button><button type="submit" class="button button-primary">Save demo user</button></div>
+      </form>
+    </section>
+  </div>
+
+  <div class="modal-backdrop hidden" id="logoutConfirmation" role="presentation" tabindex="-1">
+    <section class="modal modal-compact" role="dialog" aria-modal="true" aria-labelledby="logoutConfirmationTitle">
+      <div class="modal-heading"><div><p class="eyebrow">DEMO WORKSPACE</p><h2 id="logoutConfirmationTitle">Sign out</h2><p>This frontend demo has no active sign-in session to end.</p></div><button class="close-button" data-close-modal aria-label="Close dialog">×</button></div>
+      <div class="modal-actions"><button type="button" class="button button-secondary" id="logoutCancelButton">Stay here</button><button type="button" class="button button-primary" id="logoutContinueButton">Continue</button></div>
+    </section>
+  </div>
+
+  <div class="toast hidden" id="toast" role="status"></div>
+  <script src="js/script.js"></script>
+</body>
+</html>
