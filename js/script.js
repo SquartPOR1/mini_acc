@@ -108,38 +108,8 @@
     const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   }
-  function loadState() {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed.transactions) && Array.isArray(parsed.accounts)) {
-          state = parsed;
-          if (!Array.isArray(state.members)) state.members = structuredClone(sampleMembers);
-          if (!Array.isArray(state.collections)) state.collections = structuredClone(sampleCollections);
-          if (!Array.isArray(state.expenses)) state.expenses = structuredClone(sampleExpenses);
-          if (!Array.isArray(state.advances)) state.advances = structuredClone(sampleAdvances);
-          if (!Array.isArray(state.cashReturns)) state.cashReturns = structuredClone(sampleCashReturns);
-          if (!Array.isArray(state.auditTrail)) state.auditTrail = [];
-          if (!Number.isInteger(Number(state.nextAuditNumber)) || Number(state.nextAuditNumber) < 1) state.nextAuditNumber = state.auditTrail.length + 1;
-          else state.nextAuditNumber = Number(state.nextAuditNumber);
-          if (!Array.isArray(state.users)) state.users = structuredClone(sampleUsers);
-          if (!state.settings || typeof state.settings !== "object") state.settings = structuredClone(defaultSettings);
-          if (!Number.isInteger(Number(state.nextMemberNumber)) || Number(state.nextMemberNumber) < 1) state.nextMemberNumber = state.members.length + 1;
-          else state.nextMemberNumber = Number(state.nextMemberNumber);
-          if (!Number.isInteger(Number(state.nextAccountCode)) || Number(state.nextAccountCode) < 1) state.nextAccountCode = 6001;
-          else state.nextAccountCode = Number(state.nextAccountCode);
-          if (!Number.isInteger(Number(state.nextCashReturnNumber)) || Number(state.nextCashReturnNumber) < 1) state.nextCashReturnNumber = state.cashReturns.length + 1;
-          else state.nextCashReturnNumber = Number(state.nextCashReturnNumber);
-          return;
-        }
-        throw new Error("Saved accounting data has an invalid format.");
-      }
-    } catch (error) {
-      console.error("Could not load saved accounting data.", error);
-      showToast("Saved data could not be loaded. Starting with sample data.", "error");
-    }
-    state = {
+  function createDemoState() {
+    return {
       accounts: structuredClone(defaultAccounts),
       transactions: structuredClone(sampleTransactions),
       nextAccountCode: 6001,
@@ -155,7 +125,168 @@
       users: structuredClone(sampleUsers),
       settings: structuredClone(defaultSettings)
     };
-    saveState();
+  }
+
+  function syncDatabaseStatusBadge(connected) {
+    const badge = document.getElementById("databaseStatusBadge");
+    if (!badge) return;
+    badge.textContent = connected ? "DB: connected" : "DB: disconnected (demo mode)";
+    badge.classList.toggle("connected", connected);
+    badge.classList.toggle("disconnected", !connected);
+  }
+
+  function normalizeDatabaseState(data) {
+    return {
+      accounts: Array.isArray(data.accounts) ? data.accounts.map((account) => ({
+        ...account,
+        code: String(account.code ?? ""),
+        name: String(account.name ?? ""),
+        type: String(account.type ?? "Asset"),
+        description: account.description ?? ""
+      })) : [],
+      transactions: Array.isArray(data.transactions) ? data.transactions.map((item) => ({
+        ...item,
+        id: item.id ?? `tx-${Date.now()}`,
+        type: item.type ?? "income",
+        amount: Number(item.amount) || 0,
+        date: item.date || localDateString(),
+        notes: item.notes ?? ""
+      })) : [],
+      nextAccountCode: 6001,
+      members: Array.isArray(data.members) ? data.members.map((member) => ({
+        ...member,
+        id: member.id ?? `mem-${Date.now()}`,
+        memberId: member.member_id ?? member.memberId ?? `ORG-${String(today.getFullYear()).slice(-2)}-${String(Date.now()).slice(-3)}`,
+        name: member.name ?? "",
+        course: member.course ?? "",
+        year: member.year ?? "",
+        fee: Number(member.fee) || 0,
+        email: member.email ?? "",
+        phone: member.phone ?? "",
+        createdAt: member.created_at ?? member.createdAt ?? localDateString()
+      })) : [],
+      collections: Array.isArray(data.collections) ? data.collections.map((item) => ({
+        ...item,
+        id: item.id ?? `col-${Date.now()}`,
+        reference: item.reference ?? "",
+        memberId: item.member_id ?? item.memberId ?? "",
+        memberName: item.member_name ?? item.memberName ?? "",
+        amount: Number(item.amount) || 0,
+        date: item.date || localDateString(),
+        method: item.method ?? "Cash",
+        notes: item.notes ?? ""
+      })) : [],
+      expenses: Array.isArray(data.expenses) ? data.expenses.map((item) => ({
+        ...item,
+        id: item.id ?? `exp-${Date.now()}`,
+        description: item.description ?? "",
+        category: item.category ?? "",
+        amount: Number(item.amount) || 0,
+        date: item.date || localDateString(),
+        responsible: item.responsible ?? "",
+        reference: item.reference ?? "",
+        advanceId: item.advance_id ?? item.advanceId ?? "",
+        notes: item.notes ?? ""
+      })) : [],
+      advances: Array.isArray(data.advances) ? data.advances.map((item) => ({
+        ...item,
+        id: item.id ?? `adv-${Date.now()}`,
+        reference: item.reference ?? "",
+        activity: item.activity ?? "",
+        responsible: item.responsible ?? "",
+        amount: Number(item.amount) || 0,
+        date: item.date || localDateString()
+      })) : [],
+      cashReturns: Array.isArray(data.cash_returns) ? data.cash_returns.map((item) => ({
+        ...item,
+        id: item.id ?? `return-${Date.now()}`,
+        advanceId: item.advance_id ?? item.advanceId ?? "",
+        reference: item.reference ?? "",
+        amount: Number(item.amount) || 0,
+        date: item.date || localDateString()
+      })) : [],
+      auditTrail: Array.isArray(data.audit_trail) ? data.audit_trail.map((item) => ({
+        ...item,
+        id: item.id ?? `audit-${Date.now()}`,
+        amount: Number(item.amount) || 0,
+        date: item.date || localDateString(),
+        recordedAt: item.recorded_at ?? item.recordedAt ?? new Date().toISOString()
+      })) : [],
+      nextAuditNumber: 1,
+      nextMemberNumber: (Array.isArray(data.members) ? data.members.length : 0) + 1,
+      nextCashReturnNumber: (Array.isArray(data.cash_returns) ? data.cash_returns.length : 0) + 1,
+      users: Array.isArray(data.users) ? data.users.map((user) => ({
+        ...user,
+        id: user.id ?? `user-${Date.now()}`,
+        name: user.name ?? "",
+        email: user.email ?? "",
+        role: user.role ?? "Finance officer",
+        status: user.status ?? "Active",
+        current: Boolean(user.is_current ?? user.current ?? false)
+      })) : [],
+      settings: Array.isArray(data.settings) && data.settings.length ? {
+        organizationName: data.settings[0].organization_name ?? data.settings[0].organizationName ?? "School Organization",
+        defaultFee: Number(data.settings[0].default_fee ?? data.settings[0].defaultFee ?? 1000),
+        receiptPrefix: data.settings[0].receipt_prefix ?? data.settings[0].receiptPrefix ?? "OR"
+      } : structuredClone(defaultSettings)
+    };
+  }
+
+  async function loadState() {
+    syncDatabaseStatusBadge(false);
+
+    const loadLocalFallback = () => {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed.transactions) && Array.isArray(parsed.accounts)) {
+            state = parsed;
+            if (!Array.isArray(state.members)) state.members = structuredClone(sampleMembers);
+            if (!Array.isArray(state.collections)) state.collections = structuredClone(sampleCollections);
+            if (!Array.isArray(state.expenses)) state.expenses = structuredClone(sampleExpenses);
+            if (!Array.isArray(state.advances)) state.advances = structuredClone(sampleAdvances);
+            if (!Array.isArray(state.cashReturns)) state.cashReturns = structuredClone(sampleCashReturns);
+            if (!Array.isArray(state.auditTrail)) state.auditTrail = [];
+            if (!Number.isInteger(Number(state.nextAuditNumber)) || Number(state.nextAuditNumber) < 1) state.nextAuditNumber = state.auditTrail.length + 1;
+            else state.nextAuditNumber = Number(state.nextAuditNumber);
+            if (!Array.isArray(state.users)) state.users = structuredClone(sampleUsers);
+            if (!state.settings || typeof state.settings !== "object") state.settings = structuredClone(defaultSettings);
+            if (!Number.isInteger(Number(state.nextMemberNumber)) || Number(state.nextMemberNumber) < 1) state.nextMemberNumber = state.members.length + 1;
+            else state.nextMemberNumber = Number(state.nextMemberNumber);
+            if (!Number.isInteger(Number(state.nextAccountCode)) || Number(state.nextAccountCode) < 1) state.nextAccountCode = 6001;
+            else state.nextAccountCode = Number(state.nextAccountCode);
+            if (!Number.isInteger(Number(state.nextCashReturnNumber)) || Number(state.nextCashReturnNumber) < 1) state.nextCashReturnNumber = state.cashReturns.length + 1;
+            else state.nextCashReturnNumber = Number(state.nextCashReturnNumber);
+            return;
+          }
+          throw new Error("Saved accounting data has an invalid format.");
+        }
+      } catch (error) {
+        console.error("Could not load saved accounting data.", error);
+        showToast("Saved data could not be loaded. Starting with sample data.", "error");
+      }
+      state = createDemoState();
+      saveState();
+    };
+
+    return fetch("api/sync.php", { cache: "no-store" })
+      .then((response) => {
+        if (!response.ok) throw new Error(`Database API responded with ${response.status}`);
+        return response.json();
+      })
+      .then((payload) => {
+        if (!payload || payload.success !== true || !payload.data) {
+          throw new Error("Database API returned an invalid payload.");
+        }
+        state = normalizeDatabaseState(payload.data);
+        syncDatabaseStatusBadge(true);
+      })
+      .catch((error) => {
+        console.warn("Database unavailable. Showing demo data only.", error);
+        loadLocalFallback();
+        syncDatabaseStatusBadge(false);
+      });
   }
 
   function saveState() {
@@ -211,9 +342,7 @@
       else button.removeAttribute("aria-current");
     });
     const activeNav = $(`.nav-link[data-page="${page}"]`);
-    const navIcon = activeNav?.querySelector(".nav-icon")?.textContent || "";
-    $("#breadcrumbPage").textContent = activeNav ? activeNav.textContent.replace(navIcon, "").trim() : "Dashboard";
-    $("#sidebar").classList.remove("open");
+    $("#breadcrumbPage").textContent = activeNav ? activeNav.getAttribute("aria-label") || activeNav.textContent.trim() : "Dashboard";
     if (page === "dashboard") renderDashboard();
     if (page === "members") renderMembers();
     if (page === "collections") renderCollections();
@@ -567,7 +696,7 @@
 
   function renderAccounts() {
     const counts = Object.fromEntries(accountTypes.map((type) => [type, state.accounts.filter((account) => account.type === type).length]));
-    $("#accountSummary").innerHTML = accountTypes.map((type) => `<div class="account-type-card"><span>${type} accounts</span><strong>${counts[type]}</strong></div>`).join("");
+    $("#accountSummary .account-summary-counts").innerHTML = accountTypes.map((type) => `<div class="account-type-count"><span>${type}</span><strong>${counts[type]}</strong></div>`).join("");
     const rows = [...state.accounts].sort((a, b) => Number(a.code) - Number(b.code));
     $("#accountsTable").innerHTML = rows.map((account) => {
       const usage = state.transactions.filter((item) => item.category === account.name).length;
@@ -656,20 +785,12 @@
     </tr>`).join("");
     $("#usersEmpty").classList.toggle("hidden", users.length > 0);
     $("#page-users .records-panel .table-wrap").classList.toggle("hidden", users.length === 0);
-    const currentUser = users.find((user) => user.current) || users[0];
-    if (currentUser) {
-      $(".topbar-profile-copy strong").textContent = currentUser.name;
-      $(".topbar-profile-copy small").textContent = currentUser.role;
-      $(".topbar-profile .avatar").textContent = currentUser.name.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase();
-    }
   }
 
   function renderSettings() {
     $("#organizationNameInput").value = state.settings.organizationName;
     $("#defaultFeeInput").value = state.settings.defaultFee;
     $("#receiptPrefixInput").value = state.settings.receiptPrefix;
-    $(".topbar-brand > span").textContent = state.settings.organizationName;
-    $(".topbar-brand > span").title = state.settings.organizationName;
   }
 
   function refreshViews() {
@@ -850,20 +971,87 @@
     return `${prefix}-${year}-${String(next).padStart(4, "0")}`;
   }
 
-  function printReceipt(payment) {
+  function createReceiptWindow(payment) {
     const member = state.members.find((item) => item.id === payment.memberId);
-    const popup = window.open("", "_blank", "width=720,height=700");
-    if (!popup) {
-      showToast("Allow pop-ups to print the receipt.", "error");
-      return;
-    }
     const assessed = member ? Number(member.fee) : 0;
     const history = member ? memberPayments(member.id).sort((a, b) => a.date.localeCompare(b.date) || a.reference.localeCompare(b.reference)) : [];
     const paymentIndex = history.findIndex((item) => item.id === payment.id);
     const paidBefore = paymentIndex >= 0 ? history.slice(0, paymentIndex).reduce((sum, item) => sum + Number(item.amount), 0) : 0;
     const balance = member ? Math.max(0, assessed - paidBefore - Number(payment.amount)) : 0;
-    popup.document.write(`<!doctype html><html><head><title>Receipt ${escapeHtml(payment.reference)}</title><style>body{font:15px Arial,sans-serif;color:#20283a;margin:40px auto;max-width:620px}.receipt{border:1px solid #dfe3ea;padding:32px}.top{display:flex;justify-content:space-between;border-bottom:1px solid #e8ebf1;padding-bottom:18px}.muted{color:#788398;font-size:13px}.line{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #edf0f4}.total{font-weight:bold;font-size:20px}.footer{margin-top:30px;text-align:center;color:#788398;font-size:12px}</style></head><body><main class="receipt"><div class="top"><div><h1>Official Receipt</h1><div class="muted">${escapeHtml(state.settings.organizationName)} · Membership Fee</div></div><div><strong>${escapeHtml(payment.reference)}</strong><br><span class="muted">${dateFormatter.format(validDate(payment.date))}</span></div></div><div class="line"><span>Received from</span><strong>${escapeHtml(payment.memberName)}</strong></div><div class="line"><span>Member ID</span><strong>${escapeHtml(member?.memberId || "Member record removed")}</strong></div><div class="line"><span>Payment method</span><strong>${escapeHtml(payment.method)}</strong></div><div class="line total"><span>Amount received</span><strong>${money(payment.amount)}</strong></div><div class="line"><span>Membership fee balance</span><strong>${money(balance)}</strong></div><div class="footer">This receipt was generated by the Ledgerly demo system.</div></main><script>window.onload=()=>window.print();</script></body></html>`);
-    popup.document.close();
+    const receiptHtml = `<!doctype html>
+      <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Payment receipt ${escapeHtml(payment.reference)}</title>
+        <style>
+          *{box-sizing:border-box}
+          body{margin:0;padding:36px 16px;background:#f7f7f7;color:#18181b;font:14px Arial,sans-serif}
+          .receipt{width:min(100%,620px);margin:0 auto;padding:36px 40px;background:#fff;border:1px solid #e4e4e7;box-shadow:0 12px 36px #18181b12}
+          .receipt-header{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;padding-bottom:22px;border-bottom:2px solid #18181b}
+          .organization{margin:0 0 7px;color:#18181b;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+          h1{margin:0;font-size:24px;letter-spacing:-.03em}
+          .receipt-type{margin:7px 0 0;color:#52525b;font-size:12px}
+          .receipt-number{text-align:right}
+          .label{display:block;color:#52525b;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+          .receipt-number strong{display:block;margin-top:6px;font-size:15px}
+          .receipt-meta{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:20px 0}
+          .meta-value{display:block;margin-top:6px;color:#18181b;font-size:13px;font-weight:600}
+          .section-title{margin:0 0 10px;color:#52525b;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+          .details{width:100%;border-collapse:collapse}
+          .details td{padding:11px 0;border-top:1px solid #e4e4e7}
+          .details td:first-child{color:#52525b}
+          .details td:last-child{text-align:right;font-weight:600}
+          .amount-box{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-top:18px;padding:16px 18px;border:1px solid #e4e4e7;background:#f7f7f7}
+          .amount-box strong{color:#18181b;font-size:22px}
+          .balance{display:flex;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid #e4e4e7}
+          .balance strong{text-align:right}
+          .notes{margin:16px 0 0;color:#52525b;font-size:12px;line-height:1.5}
+          .signatures{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:52px}
+          .signature-line{padding-top:8px;border-top:1px solid #a1a1aa;color:#52525b;font-size:11px}
+          .receipt-footer{margin:26px 0 0;padding-top:14px;border-top:1px solid #e4e4e7;color:#52525b;font-size:10px;text-align:center}
+          @media(max-width:520px){body{padding:14px 8px}.receipt{padding:26px 20px}.receipt-header{flex-direction:column}.receipt-number{text-align:left}.signatures{gap:18px}}
+          @media print{@page{size:A5 portrait;margin:12mm}body{padding:0;background:#fff}.receipt{width:100%;margin:0;padding:0;border:0;box-shadow:none}}
+        </style>
+      </head>
+      <body>
+        <main class="receipt">
+          <header class="receipt-header">
+            <div>
+              <p class="organization">${escapeHtml(state.settings.organizationName)}</p>
+              <h1>Payment receipt</h1>
+              <p class="receipt-type">Membership fee</p>
+            </div>
+            <div class="receipt-number"><span class="label">Receipt no.</span><strong>${escapeHtml(payment.reference)}</strong></div>
+          </header>
+          <div class="receipt-meta">
+            <div><span class="label">Date received</span><strong class="meta-value">${dateFormatter.format(validDate(payment.date))}</strong></div>
+            <div><span class="label">Payment method</span><strong class="meta-value">${escapeHtml(payment.method)}</strong></div>
+          </div>
+          <section>
+            <h2 class="section-title">Received from</h2>
+            <table class="details">
+              <tbody>
+                <tr><td>Member name</td><td>${escapeHtml(payment.memberName)}</td></tr>
+                <tr><td>Member ID</td><td>${escapeHtml(member?.memberId || "Member record removed")}</td></tr>
+                ${member ? `<tr><td>Course / year</td><td>${escapeHtml([member.course, member.year].filter(Boolean).join(" · ") || "—")}</td></tr>` : ""}
+                <tr><td>Payment for</td><td>Membership fee</td></tr>
+              </tbody>
+            </table>
+          </section>
+          <div class="amount-box"><span class="label">Amount received</span><strong>${money(payment.amount)}</strong></div>
+          <div class="balance"><span>Remaining membership balance</span><strong>${member ? money(balance) : "Unavailable"}</strong></div>
+          ${payment.notes ? `<p class="notes"><strong>Note:</strong> ${escapeHtml(payment.notes)}</p>` : ""}
+          <div class="signatures"><div class="signature-line">Received by</div><div class="signature-line">Authorized signature</div></div>
+          <footer class="receipt-footer">Thank you. Please retain this receipt for your records.</footer>
+        </main>
+      </body>
+      </html>`;
+    const frame = $("#receiptPreviewFrame");
+    frame.addEventListener("load", () => frame.contentWindow.scrollTo(0, 0), { once: true });
+    frame.srcdoc = receiptHtml;
+    $("#receiptPreviewModal").classList.remove("hidden");
+    $("#receiptPreviewModal .modal").scrollTop = 0;
   }
 
   function openCollectionModal(memberId = "") {
@@ -997,19 +1185,7 @@
   }
 
   function printReceipt(payment) {
-    const member = state.members.find((item) => item.id === payment.memberId);
-    const popup = window.open("", "_blank", "width=720,height=700");
-    if (!popup) {
-      showToast("Allow pop-ups to print the receipt.", "error");
-      return;
-    }
-    const assessed = member ? Number(member.fee) : 0;
-    const history = member ? memberPayments(member.id).sort((a, b) => a.date.localeCompare(b.date) || a.reference.localeCompare(b.reference)) : [];
-    const paymentIndex = history.findIndex((item) => item.id === payment.id);
-    const paidBefore = paymentIndex >= 0 ? history.slice(0, paymentIndex).reduce((sum, item) => sum + Number(item.amount), 0) : 0;
-    const balance = member ? Math.max(0, assessed - paidBefore - Number(payment.amount)) : 0;
-    popup.document.write(`<!doctype html><html><head><title>Receipt ${escapeHtml(payment.reference)}</title><style>body{font:15px Arial,sans-serif;color:#20283a;margin:40px auto;max-width:620px}.receipt{border:1px solid #dfe3ea;padding:32px}.top{display:flex;justify-content:space-between;border-bottom:1px solid #e8ebf1;padding-bottom:18px}.muted{color:#788398;font-size:13px}.line{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #edf0f4}.total{font-weight:bold;font-size:20px}.footer{margin-top:30px;text-align:center;color:#788398;font-size:12px}@media print{button{display:none}}</style></head><body><main class="receipt"><div class="top"><div><h1>Official Receipt</h1><div class="muted">School Organization · Membership Fee</div></div><div><strong>${escapeHtml(payment.reference)}</strong><br><span class="muted">${dateFormatter.format(validDate(payment.date))}</span></div></div><div class="line"><span>Received from</span><strong>${escapeHtml(payment.memberName)}</strong></div><div class="line"><span>Member ID</span><strong>${escapeHtml(member?.memberId || "Member record removed")}</strong></div><div class="line"><span>Payment method</span><strong>${escapeHtml(payment.method)}</strong></div><div class="line total"><span>Amount received</span><strong>${money(payment.amount)}</strong></div><div class="line"><span>Membership fee balance</span><strong>${money(balance)}</strong></div><div class="footer">This receipt was generated by the Ledgerly demo system.</div></main><script>window.onload=()=>window.print();</script></body></html>`);
-    popup.document.close();
+    createReceiptWindow(payment);
   }
 
   function closeModal(modal) {
@@ -1565,6 +1741,7 @@
         "ledgerly-audit-trail.csv");
     });
     $("#reportExportButton").addEventListener("click", exportCurrentReport);
+    $("#printReceiptPreview").addEventListener("click", () => $("#receiptPreviewFrame").contentWindow.print());
     $("#logoutButton").addEventListener("click", demoLogout);
     $("#logoutCancelButton").addEventListener("click", () => $("#logoutConfirmation").classList.add("hidden"));
     $("#logoutContinueButton").addEventListener("click", () => {
@@ -1595,8 +1772,6 @@
       refreshViews();
       showToast("Sample data restored.");
     });
-    $("#mobileMenu").addEventListener("click", () => $("#sidebar").classList.toggle("open"));
-    $("#aboutButton").addEventListener("click", () => window.alert("Ledgerly is a frontend-only school organization accounting demo. Members, fee collections, expenses, advances, and demo records are stored in this browser using LocalStorage. No information is sent to a server, and the online payment preview does not process payments."));
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
         $$(".modal-backdrop:not(.hidden)").forEach(closeModal);
@@ -1605,9 +1780,8 @@
     });
   }
 
-  function initialize() {
-    loadState();
-    $("#todayLabel").textContent = new Intl.DateTimeFormat("en", { weekday: "long", month: "long", day: "numeric" }).format(today).toUpperCase();
+  async function initialize() {
+    await loadState();
     bindEvents();
     refreshViews();
   }

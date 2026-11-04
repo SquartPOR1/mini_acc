@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f5f7fb">
+  <meta name="theme-color" content="#f7f7f7">
   <title>Ledgerly — Mini Accounting</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,81 +12,32 @@
 </head>
 <body>
   <div class="app-shell">
-    <aside class="sidebar" id="sidebar">
-      <a class="brand" href="#" aria-label="Ledgerly home" data-page="dashboard">
-        <span class="brand-mark" aria-hidden="true">L</span>
-        <span class="brand-name">ledgerly<span>.</span></span>
-      </a>
-      <div class="workspace-label">WORKSPACE</div>
-      <nav class="main-nav" aria-label="Main navigation">
-        <button class="nav-link active" data-page="dashboard" aria-current="page"><span class="nav-icon">◫</span>Dashboard</button>
-        <button class="nav-link" data-page="members"><span class="nav-icon">♙</span>Membership Management</button>
-        <button class="nav-link" data-page="collections"><span class="nav-icon">₱</span>Fee Collection</button>
-        <button class="nav-link" data-page="expenses"><span class="nav-icon">↙</span>Expense Management</button>
-        <button class="nav-link" data-page="liquidation"><span class="nav-icon">↩</span>Cash Liquidation</button>
-        <button class="nav-link" data-page="reports"><span class="nav-icon">▥</span>Financial Reports</button>
-        <button class="nav-link" data-page="transactions"><span class="nav-icon">↔</span>Transaction History</button>
-        <button class="nav-link" data-page="users"><span class="nav-icon">♙</span>User Management</button>
-        <button class="nav-link" data-page="settings"><span class="nav-icon">⚙</span>Settings</button>
-        <button class="nav-link nav-logout" id="logoutButton"><span class="nav-icon">↪</span>Logout</button>
-      </nav>
-      <div class="sidebar-bottom">
-        <div class="help-card">
-          <div class="help-icon">✦</div>
-          <strong>Need a hand?</strong>
-          <p>Your demo data is saved in this browser.</p>
-          <button class="text-button" id="aboutButton">About this demo <span>→</span></button>
-        </div>
-      </div>
-    </aside>
-
     <main class="main-content">
       <header class="topbar">
-        <button class="mobile-menu" id="mobileMenu" aria-label="Open navigation">☰</button>
-        <div class="topbar-brand"><strong>Ledgerly</strong><span>Organization accounting</span></div>
-        <div class="breadcrumbs">Workspace <span>/</span> <strong id="breadcrumbPage">Dashboard</strong></div>
+        <div class="topbar-brand"><strong>Ledgerly</strong></div>
         <div class="topbar-right">
-          <span class="demo-badge"><span></span> Demo mode</span>
-          <button class="icon-button" id="resetButton" title="Restore sample data" aria-label="Restore sample data">⟳</button>
-          <div class="topbar-profile"><span class="avatar">OA</span><span class="topbar-profile-copy"><strong>Organization Admin</strong><small>Administrator</small></span></div>
+          <span id="databaseStatusBadge" class="status-badge disconnected">DB: disconnected (demo mode)</span>
+          <div class="breadcrumbs" id="breadcrumbPage">Dashboard</div>
         </div>
       </header>
 
       <section class="page active" id="page-dashboard">
         <div class="page-heading">
-          <div><p class="eyebrow" id="todayLabel">YOUR ORGANIZATION AT A GLANCE</p><h1>Good morning, Admin <span class="wave">✦</span></h1><p class="page-subtitle">Membership, collections, and activity funds at a glance.</p></div>
+          <div><h1>Good morning, Admin</h1><p class="page-subtitle">A quick view of your finances.</p></div>
           <button class="button button-primary" data-action="new-member"><span>＋</span> Add member</button>
         </div>
-        <div class="summary-grid">
-          <article class="summary-card">
-            <div class="card-topline"><span class="metric-label">Registered members</span><span class="metric-icon balance-icon">♙</span></div>
-            <div class="metric-value" id="membersCount">0</div>
-            <div class="metric-foot"><span class="neutral">Active member records</span><span class="period-label">All time</span></div>
+        <div class="overview-summary">
+          <article class="overview-panel">
+            <h2>Membership &amp; collections</h2>
+            <div class="overview-metric"><span>Registered members<small>Active member records</small></span><strong id="membersCount">0</strong></div>
+            <div class="overview-metric"><span>Membership fees assessed<small>Based on registered members</small></span><strong id="assessedTotal">₱0.00</strong></div>
+            <div class="overview-metric"><span>Actual collections<small>Recorded member payments</small></span><strong id="actualCollections">₱0.00</strong></div>
           </article>
-          <article class="summary-card">
-            <div class="card-topline"><span class="metric-label">Membership fees assessed</span><span class="metric-icon balance-icon">₱</span></div>
-            <div class="metric-value" id="assessedTotal">₱0.00</div>
-            <div class="metric-foot"><span class="neutral">Based on registered members</span><span class="period-label">All time</span></div>
-          </article>
-          <article class="summary-card">
-            <div class="card-topline"><span class="metric-label">Actual collections</span><span class="metric-icon income-icon">↗</span></div>
-            <div class="metric-value" id="actualCollections">₱0.00</div>
-            <div class="metric-foot"><span class="positive">Recorded member payments</span><span class="period-label">All time</span></div>
-          </article>
-          <article class="summary-card">
-            <div class="card-topline"><span class="metric-label">Outstanding fees</span><span class="metric-icon expense-icon">!</span></div>
-            <div class="metric-value" id="outstandingFees">₱0.00</div>
-            <div class="metric-foot"><span class="neutral">Assessed less collections</span><span class="period-label">All time</span></div>
-          </article>
-          <article class="summary-card">
-            <div class="card-topline"><span class="metric-label">Total expenses</span><span class="metric-icon expense-icon">↙</span></div>
-            <div class="metric-value" id="totalExpenses">₱0.00</div>
-            <div class="metric-foot"><span class="neutral">Expense records and transactions</span><span class="period-label">All time</span></div>
-          </article>
-          <article class="summary-card balance-card">
-            <div class="card-topline"><span class="metric-label">Available cash balance</span><span class="metric-icon balance-icon">₱</span></div>
-            <div class="metric-value" id="availableCash">₱0.00</div>
-            <div class="metric-foot"><span class="neutral">Income − expenses</span><span class="period-label">Advances not double-counted</span></div>
+          <article class="overview-panel">
+            <h2>Cash position</h2>
+            <div class="overview-metric"><span>Outstanding fees<small>Assessed less collections</small></span><strong id="outstandingFees">₱0.00</strong></div>
+            <div class="overview-metric"><span>Total expenses<small>Expense records and transactions</small></span><strong id="totalExpenses">₱0.00</strong></div>
+            <div class="overview-metric"><span>Available cash balance<small>Advances not double-counted</small></span><strong id="availableCash">₱0.00</strong></div>
           </article>
         </div>
         <div class="dashboard-grid">
@@ -110,7 +61,7 @@
 
       <section class="page" id="page-members">
         <div class="page-heading">
-          <div><p class="eyebrow">YOUR SCHOOL ORGANIZATION ROSTER</p><h1>Membership</h1><p class="page-subtitle">Maintain member records and keep track of each member’s dues status.</p></div>
+          <div><h1>Membership</h1><p class="page-subtitle">Manage members and dues status.</p></div>
           <button class="button button-primary" data-action="new-member"><span>＋</span> Add member</button>
         </div>
         <div class="panel records-panel">
@@ -126,13 +77,19 @@
 
       <section class="page" id="page-collections">
         <div class="page-heading">
-          <div><p class="eyebrow">MEMBERSHIP FEE COLLECTION</p><h1>Collections</h1><p class="page-subtitle">Record full or partial dues payments and issue printable receipts.</p></div>
+          <div><h1>Collections</h1><p class="page-subtitle">Record payments and view receipts.</p></div>
           <button class="button button-primary" data-action="new-collection"><span>＋</span> Record payment</button>
         </div>
-        <div class="summary-grid compact-summary">
-          <article class="summary-card"><div class="card-topline"><span class="metric-label">Collected</span><span class="metric-icon income-icon">↗</span></div><div class="metric-value" id="collectionPageTotal">₱0.00</div><div class="metric-foot"><span class="period-label">All recorded payments</span></div></article>
-          <article class="summary-card"><div class="card-topline"><span class="metric-label">Paid members</span><span class="metric-icon income-icon">✓</span></div><div class="metric-value" id="paidMemberCount">0</div><div class="metric-foot"><span class="period-label">Fees fully settled</span></div></article>
-          <article class="summary-card"><div class="card-topline"><span class="metric-label">Still outstanding</span><span class="metric-icon expense-icon">!</span></div><div class="metric-value" id="unpaidMemberCount">0</div><div class="metric-foot"><span class="period-label">Partial or unpaid</span></div></article>
+        <div class="overview-summary">
+          <article class="overview-panel">
+            <h2>Collections</h2>
+            <div class="overview-metric"><span>Total collected<small>All recorded payments</small></span><strong id="collectionPageTotal">₱0.00</strong></div>
+            <div class="overview-metric"><span>Paid members<small>Fees fully settled</small></span><strong id="paidMemberCount">0</strong></div>
+          </article>
+          <article class="overview-panel">
+            <h2>Payment status</h2>
+            <div class="overview-metric"><span>Still outstanding<small>Partial or unpaid</small></span><strong id="unpaidMemberCount">0</strong></div>
+          </article>
         </div>
         <article class="panel online-demo">
           <div class="online-mark">↗</div><div class="online-copy"><strong>Online payment preview</strong><span>Demonstration only — no payment gateway or real charge is connected.</span></div>
@@ -152,12 +109,15 @@
 
       <section class="page" id="page-expenses">
         <div class="page-heading">
-          <div><p class="eyebrow">ORGANIZATION SPENDING</p><h1>Expense Management</h1><p class="page-subtitle">Record actual expenses with responsible persons and supporting references.</p></div>
+          <div><h1>Expenses</h1><p class="page-subtitle">Track spending and supporting details.</p></div>
           <button class="button button-primary" data-action="new-expense"><span>＋</span> Record expense</button>
         </div>
-        <div class="summary-grid compact-summary">
-          <article class="summary-card"><div class="card-topline"><span class="metric-label">Actual expenses</span><span class="metric-icon expense-icon">↙</span></div><div class="metric-value" id="expensePageTotal">₱0.00</div><div class="metric-foot"><span class="period-label">All recorded expenses</span></div></article>
-          <article class="summary-card"><div class="card-topline"><span class="metric-label">Expense records</span><span class="metric-icon balance-icon">▤</span></div><div class="metric-value" id="expenseRecordCount">0</div><div class="metric-foot"><span class="period-label">Actual expenses on file</span></div></article>
+        <div class="overview-summary overview-single">
+          <article class="overview-panel">
+            <h2>Expense overview</h2>
+            <div class="overview-metric"><span>Actual expenses<small>All recorded expenses</small></span><strong id="expensePageTotal">₱0.00</strong></div>
+            <div class="overview-metric"><span>Expense records<small>Actual expenses on file</small></span><strong id="expenseRecordCount">0</strong></div>
+          </article>
         </div>
         <article class="panel records-panel expense-history-panel">
           <div class="panel-heading"><div><h2>Expense history</h2><p>Recorded expenses and supporting document references.</p></div><button class="button button-secondary button-small" id="expenseExportButton">↓ Export CSV</button></div>
@@ -173,13 +133,19 @@
 
       <section class="page" id="page-liquidation">
         <div class="page-heading">
-          <div><p class="eyebrow">CASH ADVANCES &amp; SETTLEMENT</p><h1>Cash Liquidation</h1><p class="page-subtitle">Reconcile activity expenses with advances and record unspent cash returns.</p></div>
+          <div><h1>Cash liquidation</h1><p class="page-subtitle">Reconcile advances, expenses, and returns.</p></div>
           <button class="button button-primary" data-action="new-advance"><span>＋</span> Record cash advance</button>
         </div>
-        <div class="summary-grid compact-summary">
-          <article class="summary-card"><div class="card-topline"><span class="metric-label">Cash advanced</span><span class="metric-icon balance-icon">₱</span></div><div class="metric-value" id="advancePageTotal">₱0.00</div><div class="metric-foot"><span class="period-label">Funds issued for activities</span></div></article>
-          <article class="summary-card"><div class="card-topline"><span class="metric-label">Actual expenses</span><span class="metric-icon expense-icon">↙</span></div><div class="metric-value" id="liquidationExpenseTotal">₱0.00</div><div class="metric-foot"><span class="period-label">Linked receipts and expenses</span></div></article>
-          <article class="summary-card"><div class="card-topline"><span class="metric-label">Unsettled balances</span><span class="metric-icon expense-icon">!</span></div><div class="metric-value" id="unliquidatedTotal">₱0.00</div><div class="metric-foot"><span class="period-label">Return due or reimbursement</span></div></article>
+        <div class="overview-summary">
+          <article class="overview-panel">
+            <h2>Activity funds</h2>
+            <div class="overview-metric"><span>Cash advanced<small>Funds issued for activities</small></span><strong id="advancePageTotal">₱0.00</strong></div>
+            <div class="overview-metric"><span>Actual expenses<small>Linked receipts and expenses</small></span><strong id="liquidationExpenseTotal">₱0.00</strong></div>
+          </article>
+          <article class="overview-panel">
+            <h2>Settlement</h2>
+            <div class="overview-metric"><span>Unsettled balances<small>Return due or reimbursement</small></span><strong id="unliquidatedTotal">₱0.00</strong></div>
+          </article>
         </div>
         <article class="panel records-panel liquidation-panel">
           <div class="panel-heading"><div><h2>Cash advances &amp; liquidation history</h2><p>Only actual expenses affect available cash. Record returned cash here without counting it again in the cash balance.</p></div></div>
@@ -190,7 +156,7 @@
 
       <section class="page" id="page-users">
         <div class="page-heading">
-          <div><p class="eyebrow">DEMO WORKSPACE ACCESS</p><h1>User Management</h1><p class="page-subtitle">Manage the sample users shown in this browser demo. This does not create login accounts.</p></div>
+          <div><h1>Users</h1><p class="page-subtitle">Manage demo workspace users.</p></div>
           <button class="button button-primary" data-action="new-user"><span>＋</span> Add demo user</button>
         </div>
         <div class="notice-card"><strong>Frontend demo only</strong><span>User records are for interface demonstration. There is no authentication or server-side access control.</span></div>
@@ -203,7 +169,7 @@
 
       <section class="page" id="page-settings">
         <div class="page-heading">
-          <div><p class="eyebrow">WORKSPACE PREFERENCES</p><h1>Settings</h1><p class="page-subtitle">Update organization details and defaults used by new demo records.</p></div>
+          <div><h1>Settings</h1><p class="page-subtitle">Set organization details and defaults.</p></div>
         </div>
         <article class="panel settings-card">
           <div class="panel-heading"><div><h2>Organization settings</h2><p>These preferences are saved in LocalStorage in this browser.</p></div></div>
@@ -217,12 +183,12 @@
             <div class="form-error hidden" id="settingsError" role="alert"></div>
           </form>
         </article>
-        <article class="panel settings-note"><strong>Data &amp; privacy</strong><p>This is a browser-only prototype. Records stay in this browser’s LocalStorage and are not synchronized or protected by user accounts.</p></article>
+        <article class="panel settings-note"><strong>Data &amp; privacy</strong><p>This is a browser-only prototype. Records stay in this browser’s LocalStorage and are not synchronized or protected by user accounts.</p><button class="button button-secondary button-small" id="resetButton">Restore sample data</button></article>
       </section>
 
       <section class="page" id="page-transactions">
         <div class="page-heading">
-          <div><p class="eyebrow">KEEP EVERY ENTRY IN ONE PLACE</p><h1>Transaction History &amp; Audit Trail</h1><p class="page-subtitle">Review registrations, payments, expenses, cash liquidation, and record changes.</p></div>
+          <div><h1>Transaction history</h1><p class="page-subtitle">Review financial activity and changes.</p></div>
           <button class="button button-primary" data-action="new-transaction"><span>＋</span> Add transaction</button>
         </div>
         <div class="panel transactions-panel">
@@ -243,10 +209,13 @@
 
       <section class="page" id="page-accounts">
         <div class="page-heading">
-          <div><p class="eyebrow">ORGANIZE YOUR BOOKS</p><h1>Chart of accounts</h1><p class="page-subtitle">A clear list of the accounts you use to track activity.</p></div>
+          <div><h1>Chart of accounts</h1><p class="page-subtitle">View and manage account categories.</p></div>
           <button class="button button-primary" data-action="new-account"><span>＋</span> Add account</button>
         </div>
-        <div class="account-summary" id="accountSummary"></div>
+        <article class="account-summary overview-panel" id="accountSummary">
+          <h2>Accounts by type</h2>
+          <div class="account-summary-counts"></div>
+        </article>
         <article class="panel accounts-panel">
           <div class="panel-heading"><div><h2>All accounts</h2><p>Manage your organization’s account categories.</p></div></div>
           <div class="table-wrap">
@@ -258,16 +227,23 @@
 
       <section class="page" id="page-reports">
         <div class="page-heading">
-          <div><p class="eyebrow">A CLEARER VIEW OF YOUR BOOKS</p><h1>Financial Reports</h1><p class="page-subtitle">Filter, print, and export organization income and expenses.</p></div>
+          <div><h1>Financial reports</h1><p class="page-subtitle">Review and export financial summaries.</p></div>
           <div class="heading-actions"><button class="button button-secondary" id="reportPrintButton">▧ Print report</button><button class="button button-primary" id="reportExportButton">↓ Export CSV</button></div>
         </div>
         <div class="report-filter panel"><label for="reportType">Report</label><select id="reportType"><option value="summary">Financial summary</option><option value="collections">Collections</option><option value="expenses">Expenses</option><option value="monthly">Monthly summary</option></select><label for="reportStart">From</label><input id="reportStart" type="date"><label for="reportEnd">To</label><input id="reportEnd" type="date"><button class="button button-secondary button-small" id="clearReportDates">Clear dates</button><span id="reportDateRange"></span></div>
-        <div class="summary-grid report-summary">
-          <article class="summary-card"><div class="card-topline"><span class="metric-label">Membership fees assessed</span><span class="metric-icon balance-icon">₱</span></div><div class="metric-value" id="reportAssessed">₱0.00</div><div class="metric-foot"><span class="period-label">Current member roster</span></div></article>
-          <article class="summary-card"><div class="card-topline"><span class="metric-label">Total income</span><span class="metric-icon income-icon">↗</span></div><div class="metric-value" id="reportIncome">₱0.00</div><div class="metric-foot"><span class="period-label">Within selected dates</span></div></article>
-          <article class="summary-card"><div class="card-topline"><span class="metric-label">Outstanding fees</span><span class="metric-icon expense-icon">!</span></div><div class="metric-value" id="reportOutstanding">₱0.00</div><div class="metric-foot"><span class="period-label">Assessed less collections</span></div></article>
-          <article class="summary-card"><div class="card-topline"><span class="metric-label">Total expenses</span><span class="metric-icon expense-icon">↙</span></div><div class="metric-value" id="reportExpenses">₱0.00</div><div class="metric-foot"><span class="period-label">Within selected dates</span></div></article>
-          <article class="summary-card balance-card"><div class="card-topline"><span class="metric-label">Net cash activity</span><span class="metric-icon balance-icon">₱</span></div><div class="metric-value" id="reportNet">₱0.00</div><div class="metric-foot"><span class="period-label">Income − expenses; cash returns not double-counted</span></div></article>
+        <div class="report-summary">
+          <article class="report-summary-card">
+            <h2>Income &amp; membership</h2>
+            <div class="report-metric"><span>Membership fees assessed <small>Current member roster</small></span><strong id="reportAssessed">₱0.00</strong></div>
+            <div class="report-metric"><span>Total income <small>Within selected dates</small></span><strong id="reportIncome">₱0.00</strong></div>
+            <div class="report-metric"><span>Outstanding fees <small>Assessed less collections</small></span><strong id="reportOutstanding">₱0.00</strong></div>
+          </article>
+          <article class="report-summary-card">
+            <h2>Expenses &amp; cash position</h2>
+            <div class="report-metric"><span>Total expenses <small>Within selected dates</small></span><strong id="reportExpenses">₱0.00</strong></div>
+            <div class="report-metric report-net"><span>Net cash activity <small>Income less expenses</small></span><strong id="reportNet">₱0.00</strong></div>
+            <p class="report-summary-note">Cash returns are not double-counted.</p>
+          </article>
         </div>
         <div class="dashboard-grid reports-grid">
           <article class="panel"><div class="panel-heading"><div><h2>Monthly financial summary</h2><p>Income and expenses</p></div></div><div class="chart report-chart" id="reportChart"></div></article>
@@ -279,6 +255,19 @@
       <footer class="app-footer">Made for your organization <span>•</span> All amounts in Philippine pesos (₱)</footer>
     </main>
   </div>
+
+  <nav class="main-nav" aria-label="Main navigation">
+    <button class="nav-link active" data-page="dashboard" aria-current="page" aria-label="Dashboard" title="Dashboard"><span class="nav-icon" aria-hidden="true">◫</span><span class="nav-label">Dashboard</span></button>
+    <button class="nav-link" data-page="members" aria-label="Membership management" title="Membership management"><span class="nav-icon" aria-hidden="true">♙</span><span class="nav-label">Members</span></button>
+    <button class="nav-link" data-page="collections" aria-label="Fee collection" title="Fee collection"><span class="nav-icon" aria-hidden="true">₱</span><span class="nav-label">Fees</span></button>
+    <button class="nav-link" data-page="expenses" aria-label="Expense management" title="Expense management"><span class="nav-icon" aria-hidden="true">↙</span><span class="nav-label">Expenses</span></button>
+    <button class="nav-link" data-page="liquidation" aria-label="Cash liquidation" title="Cash liquidation"><span class="nav-icon" aria-hidden="true">↩</span><span class="nav-label">Liquidation</span></button>
+    <button class="nav-link" data-page="reports" aria-label="Financial reports" title="Financial reports"><span class="nav-icon" aria-hidden="true">▥</span><span class="nav-label">Reports</span></button>
+    <button class="nav-link" data-page="transactions" aria-label="Transaction history" title="Transaction history"><span class="nav-icon" aria-hidden="true">↔</span><span class="nav-label">History</span></button>
+    <button class="nav-link" data-page="users" aria-label="User management" title="User management"><span class="nav-icon" aria-hidden="true">♙</span><span class="nav-label">Users</span></button>
+    <button class="nav-link" data-page="settings" aria-label="Settings" title="Settings"><span class="nav-icon" aria-hidden="true">⚙</span><span class="nav-label">Settings</span></button>
+    <button class="nav-link nav-logout" id="logoutButton" aria-label="Logout" title="Logout"><span class="nav-icon" aria-hidden="true">↪</span><span class="nav-label">Logout</span></button>
+  </nav>
 
   <div class="modal-backdrop hidden" id="memberModal" role="presentation">
     <section class="modal" role="dialog" aria-modal="true" aria-labelledby="memberModalTitle">
@@ -378,6 +367,20 @@
       <div class="table-wrap"><table><thead><tr><th>RECEIPT / REF.</th><th>DATE</th><th>METHOD</th><th class="amount-col">AMOUNT</th><th></th></tr></thead><tbody id="memberHistoryTable"></tbody></table></div>
       <div class="empty-state hidden" id="historyEmpty"><strong>No payments recorded</strong><p>This member has no payment history yet.</p></div>
       <div class="modal-actions"><button type="button" class="button button-secondary" data-close-modal>Close</button><button type="button" class="button button-primary" id="historyAddPayment">＋ Record payment</button></div>
+    </section>
+  </div>
+
+  <div class="modal-backdrop hidden" id="receiptPreviewModal" role="presentation">
+    <section class="modal receipt-preview-modal" role="dialog" aria-modal="true" aria-labelledby="receiptPreviewTitle">
+      <div class="modal-heading">
+        <div><h2 id="receiptPreviewTitle">Payment receipt</h2><p>Review the receipt before printing.</p></div>
+        <button class="close-button" data-close-modal aria-label="Close receipt preview">×</button>
+      </div>
+      <iframe id="receiptPreviewFrame" class="receipt-preview-frame" title="Payment receipt preview"></iframe>
+      <div class="modal-actions">
+        <button type="button" class="button button-secondary" data-close-modal>Close</button>
+        <button type="button" class="button button-primary" id="printReceiptPreview">Print receipt</button>
+      </div>
     </section>
   </div>
 
