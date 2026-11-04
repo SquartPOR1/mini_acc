@@ -5,6 +5,7 @@
   const currency = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
   const dateFormatter = new Intl.DateTimeFormat("en-PH", { year: "numeric", month: "short", day: "numeric" });
   const monthFormatter = new Intl.DateTimeFormat("en", { month: "short" });
+  const clockFormatter = new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" });
   const accountTypes = ["Income", "Expense", "Asset", "Liability", "Equity"];
   const defaultAccounts = [
     { id: "acct-income-dues", code: "4001", name: "Membership dues", type: "Income", description: "Regular member contributions" },
@@ -107,6 +108,12 @@
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
+  }
+  function updateLiveClock() {
+    const now = new Date();
+    const clock = $("#liveClock");
+    clock.dateTime = now.toISOString();
+    clock.textContent = clockFormatter.format(now);
   }
   function createDemoState() {
     return {
@@ -1781,6 +1788,8 @@
   }
 
   async function initialize() {
+    updateLiveClock();
+    setInterval(updateLiveClock, 1000);
     await loadState();
     bindEvents();
     refreshViews();
