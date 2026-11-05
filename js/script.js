@@ -869,10 +869,32 @@
     );
   }
 
+  function animateStagger(selector, baseDelay = 18, step = 22, root = document) {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    $$(selector, root).forEach((el, i) => {
+      el.style.animation = "none";
+      el.style.opacity = "0";
+      // force reflow
+      void el.offsetHeight;
+      el.style.animation = "";
+      el.style.setProperty("--stagger", `${Math.min(i, 14) * step + baseDelay}ms`);
+      el.classList.remove("reveal-in");
+      void el.offsetHeight;
+      el.classList.add("reveal-in");
+    });
+  }
+
   function navigate(page) {
+    const current = $(".page.active");
     $$(".page").forEach((section) =>
       section.classList.toggle("active", section.id === `page-${page}`),
     );
+    const target = $(`#page-${page}`);
+    if (target && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      target.classList.remove("page-entering");
+      void target.offsetHeight;
+      target.classList.add("page-entering");
+    }
     $$(".nav-link").forEach((button) => {
       button.classList.toggle("active", button.dataset.page === page);
       if (button.dataset.page === page)
@@ -893,6 +915,8 @@
     if (page === "reports") renderReports();
     if (page === "users") renderUsers();
     if (page === "settings") renderSettings();
+    animateStagger(`#page-${page} .panel, #page-${page} .overview-panel, #page-${page} .report-summary-card, #page-${page} .notice-card, #page-${page} .online-demo, #page-${page} .account-summary`, 30, 45);
+    animateStagger(`#page-${page} tbody tr`, 80, 18);
   }
 
   function memberPayments(memberId) {
@@ -3300,28 +3324,29 @@
         setTransactionTypeOptions(radio.value),
       ),
     );
-    $("#transactionSearch").addEventListener("input", renderTransactions);
-    $("#typeFilter").addEventListener("change", renderTransactions);
-    $("#monthFilter").addEventListener("change", renderTransactions);
-    $("#memberSearch").addEventListener("input", renderMembers);
-    $("#memberStatusFilter").addEventListener("change", renderMembers);
-    $("#courseFilter").addEventListener("change", renderMembers);
-    $("#collectionSearch").addEventListener("input", renderCollections);
-    $("#collectionStatusFilter").addEventListener("change", renderCollections);
-    $("#collectionDateFilter").addEventListener("change", renderCollections);
+    $("#transactionSearch").addEventListener("input", () => { renderTransactions(); animateStagger("#page-transactions tbody tr", 20, 16); });
+    $("#typeFilter").addEventListener("change", () => { renderTransactions(); animateStagger("#page-transactions tbody tr", 20, 16); });
+    $("#monthFilter").addEventListener("change", () => { renderTransactions(); animateStagger("#page-transactions tbody tr", 20, 16); });
+    $("#memberSearch").addEventListener("input", () => { renderMembers(); animateStagger("#page-members tbody tr", 20, 16); });
+    $("#memberStatusFilter").addEventListener("change", () => { renderMembers(); animateStagger("#page-members tbody tr", 20, 16); });
+    $("#courseFilter").addEventListener("change", () => { renderMembers(); animateStagger("#page-members tbody tr", 20, 16); });
+    $("#collectionSearch").addEventListener("input", () => { renderCollections(); animateStagger("#page-collections tbody tr", 20, 16); });
+    $("#collectionStatusFilter").addEventListener("change", () => { renderCollections(); animateStagger("#page-collections tbody tr", 20, 16); });
+    $("#collectionDateFilter").addEventListener("change", () => { renderCollections(); animateStagger("#page-collections tbody tr", 20, 16); });
     $("#collectionMemberInput").addEventListener("change", () =>
       updateMemberFeePreview(true),
     );
-    $("#expenseSearch").addEventListener("input", renderExpenses);
-    $("#expenseCategoryFilter").addEventListener("change", renderExpenses);
-    $("#expenseMonthFilter").addEventListener("change", renderExpenses);
-    $("#reportType").addEventListener("change", renderReports);
-    $("#reportStart").addEventListener("change", renderReports);
-    $("#reportEnd").addEventListener("change", renderReports);
+    $("#expenseSearch").addEventListener("input", () => { renderExpenses(); animateStagger("#page-expenses tbody tr", 20, 16); });
+    $("#expenseCategoryFilter").addEventListener("change", () => { renderExpenses(); animateStagger("#page-expenses tbody tr", 20, 16); });
+    $("#expenseMonthFilter").addEventListener("change", () => { renderExpenses(); animateStagger("#page-expenses tbody tr", 20, 16); });
+    $("#reportType").addEventListener("change", () => { renderReports(); animateStagger("#page-reports .panel, #page-reports .report-summary-card", 20, 35); animateStagger("#page-reports tbody tr", 60, 14); });
+    $("#reportStart").addEventListener("change", () => { renderReports(); animateStagger("#page-reports tbody tr", 30, 14); });
+    $("#reportEnd").addEventListener("change", () => { renderReports(); animateStagger("#page-reports tbody tr", 30, 14); });
     $("#clearReportDates").addEventListener("click", () => {
       $("#reportStart").value = "";
       $("#reportEnd").value = "";
       renderReports();
+      animateStagger("#page-reports tbody tr", 30, 14);
     });
     $("#historyAddPayment").addEventListener("click", (event) => {
       const memberId = event.currentTarget.dataset.memberId;
@@ -3419,6 +3444,11 @@
     await loadState();
     bindEvents();
     refreshViews();
+    const active = $(".page.active");
+    if (active && !document.body.classList.contains("intro-playing")) {
+      animateStagger(`#${active.id} .panel, #${active.id} .overview-panel, #${active.id} .report-summary-card, #${active.id} .notice-card, #${active.id} .online-demo, #${active.id} .account-summary`, 40, 45);
+      animateStagger(`#${active.id} tbody tr`, 90, 18);
+    }
   }
 
   initialize();

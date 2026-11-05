@@ -8,6 +8,15 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <div id="intro-overlay" class="intro-overlay" aria-label="Loading Ledgerly">
+    <div id="intro-canvas" class="intro-canvas" aria-hidden="true"></div>
+    <div class="intro-title" aria-hidden="true">
+      <span class="intro-mark">
+        <svg viewBox="0 0 28 24"><path d="M2 21 10.5 4l4.7 9 2.4-4.5L26 21H2Z" fill="currentColor"></path><path d="m10.5 4 4.7 9-2.7 5-5-7.3L10.5 4Z" fill="rgba(7,13,19,.55)"></path></svg>
+      </span>
+      <span class="intro-word">Ledgerly</span>
+    </div>
+  </div>
   <div class="app-shell">
     <main class="main-content">
       <header class="topbar">
@@ -448,5 +457,6 @@
 
   <div class="toast hidden" id="toast" role="status"></div>
   <script src="js/script.js"></script>
+  <script type="module" src="js/intro.js"></script>
 </body>
 </html>
