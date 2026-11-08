@@ -523,6 +523,8 @@
 
   let state;
   let toastTimer;
+  let paymentNotificationsLoading = false;
+  let seenPaymentNotificationIds = null;
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => [
     ...root.querySelectorAll(selector),
@@ -908,6 +910,7 @@
     if (page === "dashboard") renderDashboard();
     if (page === "members") renderMembers();
     if (page === "collections") renderCollections();
+    if (page === "collections") loadPaymentNotifications(true);
     if (page === "expenses") renderExpenses();
     if (page === "liquidation") renderLiquidation();
     if (page === "transactions") renderTransactions();
@@ -1213,7 +1216,7 @@
         <td>${escapeHtml(member.email || "—")}<br><span class="member-id">${escapeHtml(member.phone || "—")}</span></td>
         <td>${money(member.fee)}</td><td class="positive-amount">${money(paid)}</td><td>${money(balance)}</td>
         <td><span class="status-pill ${status.toLowerCase()}">${status}</span></td>
-        <td><div class="row-actions"><button class="row-action" data-member-history="${escapeHtml(member.id)}" title="Payment history" aria-label="Payment history for ${escapeHtml(member.name)}">▤</button><button class="row-action" data-edit-member="${escapeHtml(member.id)}" title="Edit member" aria-label="Edit ${escapeHtml(member.name)}">✎</button><button class="row-action delete" data-delete-member="${escapeHtml(member.id)}" title="Delete member" aria-label="Delete ${escapeHtml(member.name)}">×</button></div></td>
+        <td><div class="row-actions"><button class="row-action" data-member-payment-link="${escapeHtml(member.id)}" title="Create or replace private payment link" aria-label="Create or replace private payment link for ${escapeHtml(member.name)}">↗</button><button class="row-action" data-member-history="${escapeHtml(member.id)}" title="Payment history" aria-label="Payment history for ${escapeHtml(member.name)}">▤</button><button class="row-action" data-edit-member="${escapeHtml(member.id)}" title="Edit member" aria-label="Edit ${escapeHtml(member.name)}">✎</button><button class="row-action delete" data-delete-member="${escapeHtml(member.id)}" title="Delete member" aria-label="Delete ${escapeHtml(member.name)}">×</button></div></td>
       </tr>`;
       })
       .join("");
@@ -1296,6 +1299,137 @@
       "hidden",
       rows.length === 0,
     );
+  }
+
+  async function loadPaymentNotifications(showErrors = false) {
+    const list = $("#paymentNotifications");
+    if (!list || paymentNotificationsLoading) return;
+    paymentNotificationsLoading = true;
+    try {
+      const response = await fetch("api/paymongo.php?action=notifications", {
+        cache: "no-store",
+      });
+      const payload = await response.json();
+      if (!response.ok || payload?.success !== true) {
+        throw new Error(
+          payload?.error ||
+            `Payment notifications API responded with ${response.status}.`,
+        );
+      }
+      const notifications = Array.isArray(payload.data) ? payload.data : [];
+      if (seenPaymentNotificationIds === null) {
+        seenPaymentNotificationIds = new Set(
+          notifications.map((item) => item.id),
+        );
+      } else {
+        let collectionsChanged = false;
+        notifications.forEach((item) => {
+          if (seenPaymentNotificationIds.has(item.id)) return;
+          seenPaymentNotificationIds.add(item.id);
+          if (!item.collection_id || !item.member_id) return;
+          const collection = {
+            id: item.collection_id,
+            reference: item.reference,
+            memberId: item.member_id,
+            memberName: item.member_name,
+            date: item.collection_date,
+            amount: Number(item.amount),
+            method: item.method,
+            notes: item.collection_notes || "",
+          };
+          const index = state.collections.findIndex(
+            (entry) => entry.id === collection.id,
+          );
+          if (index < 0) state.collections.push(collection);
+          else state.collections[index] = collection;
+          collectionsChanged = true;
+        });
+        if (collectionsChanged) refreshViews();
+      }
+      $("#paymentNotificationsEmpty").textContent =
+        "No new online payment notifications. Confirmed payments will appear here for the treasurer.";
+      list.innerHTML = notifications
+        .map((item) => {
+          const created = new Date(String(item.created_at).replace(" ", "T"));
+          const createdText = Number.isNaN(created.getTime())
+            ? String(item.created_at || "")
+            : dateFormatter.format(created);
+          return `<article class="payment-notification"><div><strong>${escapeHtml(item.member_name)}</strong><span>${escapeHtml(item.reference)} · ${escapeHtml(item.method)} · ${escapeHtml(createdText)}</span></div><strong class="positive-amount">${money(item.amount)}</strong><button class="button button-secondary button-small" data-payment-notification-read="${escapeHtml(item.id)}">Mark read</button></article>`;
+        })
+        .join("");
+      $("#paymentNotificationsEmpty").classList.toggle(
+        "hidden",
+        notifications.length > 0,
+      );
+      const count = $("#paymentNotificationCount");
+      count.textContent = String(notifications.length);
+      count.classList.toggle("hidden", notifications.length === 0);
+    } catch (error) {
+      console.error("Could not load online payment notifications.", error);
+      if (showErrors) {
+        $("#paymentNotificationsEmpty").textContent =
+          error.message || "Could not load payment notifications.";
+        $("#paymentNotificationsEmpty").classList.remove("hidden");
+        showToast("Could not load online payment notifications.", "error");
+      }
+    } finally {
+      paymentNotificationsLoading = false;
+    }
+  }
+
+  async function createMemberPaymentLink(memberId, button) {
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = "…";
+    try {
+      const response = await fetch("api/paymongo.php?action=link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ memberId }),
+      });
+      const payload = await response.json();
+      if (!response.ok || payload?.success !== true || !payload.data?.url) {
+        throw new Error(
+          payload?.error || `Payment link API responded with ${response.status}.`,
+        );
+      }
+      try {
+        await navigator.clipboard.writeText(payload.data.url);
+        showToast("Private payment link copied. Share it directly with this member.");
+      } catch {
+        window.prompt("Copy this private payment link and send it to the member:", payload.data.url);
+      }
+    } catch (error) {
+      console.error("Could not create member payment link.", error);
+      showToast(error.message || "Could not create member payment link.", "error");
+    } finally {
+      button.disabled = false;
+      button.textContent = originalText;
+    }
+  }
+
+  async function markPaymentNotificationRead(id) {
+    try {
+      const response = await fetch(
+        "api/paymongo.php?action=notification-read",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id }),
+        },
+      );
+      const payload = await response.json();
+      if (!response.ok || payload?.success !== true) {
+        throw new Error(
+          payload?.error ||
+            `Payment notification API responded with ${response.status}.`,
+        );
+      }
+      await loadPaymentNotifications();
+    } catch (error) {
+      console.error("Could not mark payment notification as read.", error);
+      showToast(error.message || "Could not update payment notification.", "error");
+    }
   }
 
   function renderAdvances() {
@@ -2374,7 +2508,7 @@
     );
   }
 
-  function saveCollection(event) {
+  async function saveCollection(event) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const member = state.members.find(
@@ -2405,6 +2539,38 @@
     if (amount > balance + 0.005) {
       error.textContent = `Payment cannot exceed the remaining balance of ${money(balance)}.`;
       error.classList.remove("hidden");
+      return;
+    }
+    if (data.get("method") === "PayMongo (test)") {
+      const button = $("#collectionForm button[type='submit']");
+      button.disabled = true;
+      button.textContent = "Connecting to PayMongo…";
+      error.classList.add("hidden");
+      try {
+        const response = await fetch("api/paymongo.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ memberId: member.id, amount }),
+        });
+        const payload = await response.json();
+        if (!response.ok || payload?.success !== true) {
+          throw new Error(payload?.error || `Payment API responded with ${response.status}.`);
+        }
+        const checkoutUrl = new URL(payload.data?.checkoutUrl);
+        if (
+          checkoutUrl.protocol !== "https:" ||
+          checkoutUrl.hostname !== "checkout.paymongo.com"
+        ) {
+          throw new Error("PayMongo returned an invalid checkout URL.");
+        }
+        window.location.assign(checkoutUrl.href);
+      } catch (checkoutError) {
+        console.error("Could not start PayMongo checkout.", checkoutError);
+        error.textContent = checkoutError.message || "Could not start online checkout.";
+        error.classList.remove("hidden");
+        button.disabled = false;
+        button.textContent = "Record payment";
+      }
       return;
     }
     const collection = {
@@ -3203,6 +3369,25 @@
         openMemberHistory(historyButton.dataset.memberHistory);
         return;
       }
+      const paymentLinkButton = event.target.closest(
+        "[data-member-payment-link]",
+      );
+      if (paymentLinkButton) {
+        createMemberPaymentLink(
+          paymentLinkButton.dataset.memberPaymentLink,
+          paymentLinkButton,
+        );
+        return;
+      }
+      const notificationReadButton = event.target.closest(
+        "[data-payment-notification-read]",
+      );
+      if (notificationReadButton) {
+        markPaymentNotificationRead(
+          notificationReadButton.dataset.paymentNotificationRead,
+        );
+        return;
+      }
       const editMember = event.target.closest("[data-edit-member]");
       if (editMember) {
         const member = state.members.find(
@@ -3353,10 +3538,12 @@
       closeModal($("#historyModal"));
       openCollectionModal(memberId);
     });
-    $("#onlinePaymentButton").addEventListener("click", () =>
-      window.alert(
-        "Online payment preview only. No gateway is connected and no payment will be processed. In a live system, members would review a secure payment page before confirming.",
-      ),
+    $("#onlinePaymentButton").addEventListener("click", () => {
+      openCollectionModal();
+      $("#collectionMethodInput").value = "PayMongo (test)";
+    });
+    $("#refreshPaymentNotifications").addEventListener("click", () =>
+      loadPaymentNotifications(true),
     );
     $("#collectionExportButton").addEventListener("click", () =>
       exportCollections(),
@@ -3444,11 +3631,77 @@
     await loadState();
     bindEvents();
     refreshViews();
+    loadPaymentNotifications(true);
+    setInterval(() => {
+      if (!document.hidden) loadPaymentNotifications();
+    }, 20000);
+    trackOnlinePayment();
     const active = $(".page.active");
     if (active && !document.body.classList.contains("intro-playing")) {
       animateStagger(`#${active.id} .panel, #${active.id} .overview-panel, #${active.id} .report-summary-card, #${active.id} .notice-card, #${active.id} .online-demo, #${active.id} .account-summary`, 40, 45);
       animateStagger(`#${active.id} tbody tr`, 90, 18);
     }
+  }
+
+  async function trackOnlinePayment() {
+    const params = new URLSearchParams(window.location.search);
+    const paymentId = params.get("payment");
+    if (!paymentId) return;
+    const status = $("#onlinePaymentStatus");
+    status.classList.remove("hidden", "paid", "error");
+    const returnState = params.get("return");
+    status.textContent =
+      returnState === "cancelled"
+        ? "Checkout was closed. Checking whether PayMongo confirmed the payment…"
+        : "Checking PayMongo for payment confirmation…";
+
+    for (let attempt = 0; attempt < 40; attempt += 1) {
+      try {
+        const response = await fetch(
+          `api/paymongo.php?id=${encodeURIComponent(paymentId)}`,
+          { cache: "no-store" },
+        );
+        const payload = await response.json();
+        if (!response.ok || payload?.success !== true) {
+          throw new Error(payload?.error || `Payment status API responded with ${response.status}.`);
+        }
+        if (payload.data.status === "paid" && payload.data.collection) {
+          const item = payload.data.collection;
+          const collection = {
+            ...item,
+            memberId: item.member_id,
+            memberName: item.member_name,
+            amount: Number(item.amount),
+          };
+          const existingIndex = state.collections.findIndex(
+            (entry) => entry.id === collection.id,
+          );
+          if (existingIndex < 0) state.collections.push(collection);
+          else state.collections[existingIndex] = collection;
+          saveState();
+          refreshViews();
+          status.classList.add("paid");
+          status.textContent = `Payment confirmed and recorded. Receipt ${collection.reference}.`;
+          window.history.replaceState(null, "", window.location.pathname);
+          return;
+        }
+        if (payload.data.status === "failed") {
+          status.classList.add("error");
+          status.textContent = "Checkout could not be created. Start a new online payment.";
+          window.history.replaceState(null, "", window.location.pathname);
+          return;
+        }
+        status.textContent = "Waiting for PayMongo to confirm the payment…";
+      } catch (error) {
+        console.error("Could not check PayMongo payment status.", error);
+        status.classList.add("error");
+        status.textContent = error.message || "Could not check payment status.";
+        return;
+      }
+      await new Promise((resolve) => window.setTimeout(resolve, 3000));
+    }
+    status.textContent =
+      "Still awaiting confirmation. Keep this page open or refresh later to check again.";
   }
 
   initialize();

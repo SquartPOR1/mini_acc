@@ -194,6 +194,30 @@ tbody tr:last-child td { border-bottom: 0; }
 .field input:invalid:not(:placeholder-shown), .field select:invalid { border-color: #cf7777; }
 .form-error { padding: 9px 10px; border: 1px solid #f1d6d6; border-radius: 6px; background: #fff7f6; line-height: 1.5; }
 .panel-heading { align-items: flex-start; }
+.payment-notifications-panel { margin: 16px 0; padding: 17px 19px; }
+.payment-notifications-panel .panel-heading { padding-bottom: 12px; }
+.notification-count { display: inline-grid; min-width: 20px; height: 20px; place-items: center; padding: 0 5px; border-radius: 999px; color: #fff; background: var(--accent-strong); font-size: 10px; vertical-align: 1px; }
+.payment-notifications { display: grid; gap: 8px; }
+.payment-notification { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+.payment-notification > div { display: grid; gap: 4px; min-width: 0; }
+.payment-notification > div span { color: var(--muted); font-size: 10px; overflow-wrap: anywhere; }
+.payment-notifications-panel .empty-state { padding: 16px 8px 8px; }
+.payment-page { min-height: 100vh; background: var(--canvas); }
+.payment-header { display: flex; align-items: center; max-width: 920px; height: 72px; margin: 0 auto; padding: 0 24px; }
+.payment-brand { display: inline-flex; align-items: center; gap: 9px; color: var(--ink); text-decoration: none; }
+.payment-brand strong { font-size: 16px; }
+.payment-portal { display: grid; place-items: start center; min-height: calc(100vh - 72px); padding: 50px 20px; }
+.payment-card { width: min(100%, 480px); padding: 30px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
+.payment-card h1 { font-size: 24px; }
+.payment-intro, .payment-footnote, .payment-method-note { color: var(--muted); font-size: 12px; line-height: 1.6; }
+.member-payment-details { margin-top: 24px; }
+.member-payment-details > p { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+.member-payment-details > p strong { color: var(--ink); text-align: right; }
+.member-payment-details form { display: grid; gap: 14px; margin-top: 20px; }
+.payment-method-note { margin: 0; }
+.payment-submit { width: 100%; }
+.payment-status { margin-top: 14px; padding: 12px; border-radius: 8px; color: var(--accent-strong); background: var(--accent-soft); font-size: 12px; line-height: 1.5; }
+.payment-footnote { margin: 22px 0 0; padding-top: 15px; border-top: 1px solid var(--line); font-size: 10px; }
 @keyframes page-enter { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes modal-fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes modal-enter { from { opacity: 0; transform: translateY(8px) scale(.99); } to { opacity: 1; transform: translateY(0) scale(1); } }
@@ -203,6 +227,16 @@ tbody tr:last-child td { border-bottom: 0; }
 @keyframes reveal-in { from { opacity: 0; transform: translateY(10px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes page-drift-in { from { opacity: 0; transform: translateY(12px); filter: blur(2px); } to { opacity: 1; transform: translateY(0); filter: blur(0); } }
 @keyframes row-in { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; transform: translateX(0); } }
+
+@media (max-width: 560px) {
+  .payment-header { height: 60px; padding: 0 18px; }
+  .payment-portal { min-height: calc(100vh - 60px); padding: 24px 14px; }
+  .payment-card { padding: 23px 19px; }
+  .payment-card h1 { font-size: 21px; }
+  .payment-notifications-panel { padding: 14px; }
+  .payment-notification { grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+  .payment-notification .button { grid-column: 1 / -1; justify-self: start; }
+}
 @keyframes soft-pop { 0% { transform: scale(.97); } 60% { transform: scale(1.015); } 100% { transform: scale(1); } }
 
 /* Cinematic intro: title then cards place one-by-one */
@@ -386,6 +420,9 @@ tbody tr.reveal-in { animation: row-in .26s cubic-bezier(.2,.8,.2,1) both; anima
 .online-copy { display: grid; flex: 1; gap: 4px; }
 .online-copy strong { color: #465166; font-size: 11px; }
 .online-copy span { color: #929dad; font-size: 10px; }
+.online-copy .online-status { color: var(--accent-strong); line-height: 1.5; }
+.online-copy .online-status.paid { color: var(--green); }
+.online-copy .online-status.error { color: var(--red); }
 .report-filter input[type="date"], .report-filter select { min-height: 34px; padding: 0 9px; border: 1px solid #e8ebf1; border-radius: 7px; color: #68758a; background: #fff; font: inherit; font-size: 10px; }
 .report-filter label:not(:first-child) { margin-left: 4px; }
 .report-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 24px; margin-bottom: 24px; }

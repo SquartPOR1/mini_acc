@@ -43,6 +43,42 @@ CREATE TABLE IF NOT EXISTS collections (
     FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE
 );
 
+-- PayMongo hosted checkout reservations; confirmed payments are copied to collections.
+CREATE TABLE IF NOT EXISTS online_payments (
+    id CHAR(32) PRIMARY KEY,
+    reference VARCHAR(50) UNIQUE NOT NULL,
+    checkout_session_id VARCHAR(64) UNIQUE,
+    checkout_url TEXT,
+    member_id VARCHAR(50) NOT NULL,
+    member_name VARCHAR(100) NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    status ENUM('pending', 'paid', 'failed') NOT NULL DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    paid_at TIMESTAMP NULL
+);
+
+-- A private bearer link for a member; only the token hash is stored.
+CREATE TABLE IF NOT EXISTS member_payment_links (
+    member_id VARCHAR(50) PRIMARY KEY,
+    token_hash CHAR(64) UNIQUE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE
+);
+
+-- In-app notifications are created only after a signed paid webhook is verified.
+CREATE TABLE IF NOT EXISTS payment_notifications (
+    id CHAR(32) PRIMARY KEY,
+    online_payment_id CHAR(32) UNIQUE NOT NULL,
+    reference VARCHAR(50) NOT NULL,
+    member_name VARCHAR(100) NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    method VARCHAR(30) NOT NULL,
+    is_read TINYINT(1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (online_payment_id) REFERENCES online_payments(id) ON DELETE CASCADE,
+    INDEX idx_payment_notifications_unread (is_read, created_at)
+);
+
 -- Advances (Cash advances)
 CREATE TABLE IF NOT EXISTS advances (
     id VARCHAR(50) PRIMARY KEY,

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f6f8">
+  <title>Pay membership fee — Ledgerly</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="payment-page">
+  <header class="payment-header">
+    <a class="payment-brand" href="index.html" aria-label="Ledgerly home">
+      <svg class="ledgerly-mark" viewBox="0 0 28 24" aria-hidden="true">
+        <path d="M2 21 10.5 4l4.7 9 2.4-4.5L26 21H2Z"></path>
+        <path class="ledgerly-mark-cutout" d="m10.5 4 4.7 9-2.7 5-5-7.3L10.5 4Z"></path>
+      </svg>
+      <strong>Ledgerly</strong>
+    </a>
+  </header>
+  <main class="payment-portal">
+    <section class="payment-card" aria-labelledby="paymentTitle">
+      <p class="eyebrow">MEMBERSHIP PAYMENT</p>
+      <h1 id="paymentTitle">Pay your membership fee</h1>
+      <p class="payment-intro">Use your private payment link to view your balance and continue to secure checkout.</p>
+      <div id="paymentError" class="form-error hidden" role="alert"></div>
+      <div id="memberPaymentDetails" class="member-payment-details hidden">
+        <p>Member <strong id="paymentMemberName"></strong></p>
+        <p>Outstanding balance <strong id="paymentBalance"></strong></p>
+        <form id="memberPaymentForm">
+          <label class="field" for="paymentAmount">Payment amount (₱)
+            <input id="paymentAmount" name="amount" type="number" min="0.01" step="0.01" required>
+          </label>
+          <p class="payment-method-note">At PayMongo checkout, choose GCash, Maya, card, or QRPH.</p>
+          <button class="button button-primary payment-submit" type="submit">Continue to secure checkout</button>
+        </form>
+      </div>
+      <div id="paymentStatus" class="payment-status hidden" role="status" aria-live="polite"></div>
+      <p class="payment-footnote">Your payment is recorded only after the treasurer receives confirmation from PayMongo.</p>
+    </section>
+  </main>
+  <script src="js/payment.js"></script>
+</body>
+</html>

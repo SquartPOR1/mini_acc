@@ -77,6 +77,7 @@
           <div><h1>Membership</h1><p class="page-subtitle">Manage members and dues status.</p></div>
           <button class="button button-primary" data-action="new-member"><span>＋</span> Add member</button>
         </div>
+        <div class="notice-card"><strong>Payment link privacy</strong><span>Private links let the holder view a member balance and start checkout. This dashboard has no staff login; do not expose it through a public tunnel with real member data.</span></div>
         <div class="panel records-panel">
           <div class="table-toolbar">
             <div class="search-wrap"><span>⌕</span><input id="memberSearch" type="search" placeholder="Search name, ID, course..." aria-label="Search members"></div>
@@ -105,8 +106,13 @@
           </article>
         </div>
         <article class="panel online-demo">
-          <div class="online-mark">↗</div><div class="online-copy"><strong>Online payment preview</strong><span>Demonstration only — no payment gateway or real charge is connected.</span></div>
-          <button class="button button-secondary button-small" id="onlinePaymentButton">Preview payment flow</button>
+          <div class="online-mark">↗</div><div class="online-copy"><strong>PayMongo hosted checkout</strong><span>Test mode only — complete checkout on PayMongo and track confirmation here. No real money moves.</span><span id="onlinePaymentStatus" class="online-status hidden" role="status" aria-live="polite"></span></div>
+          <button class="button button-secondary button-small" id="onlinePaymentButton">Pay online (test)</button>
+        </article>
+        <article class="panel payment-notifications-panel">
+          <div class="panel-heading"><div><h2>Online payment notifications <span id="paymentNotificationCount" class="notification-count hidden"></span></h2><p>Payments confirmed by PayMongo’s signed webhook.</p></div><button class="button button-secondary button-small" id="refreshPaymentNotifications">Refresh</button></div>
+          <div id="paymentNotifications" class="payment-notifications" aria-live="polite"></div>
+          <div id="paymentNotificationsEmpty" class="empty-state"><strong>No new online payment notifications</strong><p>Confirmed payments will appear here for the treasurer.</p></div>
         </article>
         <article class="panel records-panel">
           <div class="panel-heading"><div><h2>Payment history</h2><p>Receipt references are generated automatically for every collection.</p></div><button class="button button-secondary button-small" id="collectionExportButton">↓ Export CSV</button></div>
@@ -308,7 +314,7 @@
         <div class="fee-preview full-field" id="memberFeePreview">Select a member to view their current balance.</div>
         <label class="field">Payment amount (₱)<input id="collectionAmountInput" name="amount" type="number" min="0.01" step="0.01" required placeholder="0.00"></label>
         <label class="field">Payment date<input id="collectionDateInput" name="date" type="date" required></label>
-        <label class="field full-field">Payment method<select id="collectionMethodInput" name="method" required><option>Cash</option><option>Bank transfer</option><option>GCash</option><option>PayMaya</option><option>Online demo</option><option>Other</option></select></label>
+        <label class="field full-field">Payment method<select id="collectionMethodInput" name="method" required><option>Cash</option><option>Bank transfer (manual record)</option><option>GCash (manual record)</option><option>PayMaya (manual record)</option><option value="PayMongo (test)">PayMongo hosted checkout (test mode)</option><option>Other</option></select></label>
         <label class="field full-field">Notes <span class="optional">(optional)</span><input id="collectionNotesInput" name="notes" maxlength="120" placeholder="Payment note"></label>
       </div>
       <div class="form-error hidden" id="collectionError" role="alert"></div>
